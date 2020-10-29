@@ -16,8 +16,11 @@ bool gPS2alphaTest = true;
 #else
 bool gPS2alphaTest = false;
 #endif
+#ifdef PSP2
+bool gBackfaceCulling = true;
+#else
 bool gBackfaceCulling;
-
+#endif
 #ifndef FINAL
 static bool charsetOpen;
 void OpenCharsetSafe()
