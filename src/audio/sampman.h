@@ -123,7 +123,11 @@ enum
 
 #define MAX_STREAMS                3
 
+#ifndef PSP2
 #define DIGITALRATE                32000
+#else
+#define DIGITALRATE                48000
+#endif
 #define DIGITALBITS                16
 #define DIGITALCHANNELS            2
 

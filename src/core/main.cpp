@@ -151,11 +151,11 @@ DoRWStuffStartOfFrame(int16 TopRed, int16 TopGreen, int16 TopBlue, int16 BottomR
 	CDraw::CalculateAspectRatio();
 	CameraSize(Scene.camera, nil, SCREEN_VIEWWINDOW, SCREEN_ASPECT_RATIO);
 	CVisibilityPlugins::SetRenderWareCamera(Scene.camera);
-	RwCameraClear(Scene.camera, &TopColor.rwRGBA, rwCAMERACLEARZ);
 
 	if(!RsCameraBeginUpdate(Scene.camera))
 		return false;
-
+	RwCameraClear(Scene.camera, &gColourTop, rwCAMERACLEARZ);
+	
 	CSprite2d::InitPerFrame();
 
 	if(Alpha != 0)
@@ -170,11 +170,11 @@ DoRWStuffStartOfFrame_Horizon(int16 TopRed, int16 TopGreen, int16 TopBlue, int16
 	CDraw::CalculateAspectRatio();
 	CameraSize(Scene.camera, nil, SCREEN_VIEWWINDOW, SCREEN_ASPECT_RATIO);
 	CVisibilityPlugins::SetRenderWareCamera(Scene.camera);
-	RwCameraClear(Scene.camera, &gColourTop, rwCAMERACLEARZ);
 
 	if(!RsCameraBeginUpdate(Scene.camera))
 		return false;
-
+	RwCameraClear(Scene.camera, &gColourTop, rwCAMERACLEARZ);
+	
 	TheCamera.m_viewMatrix.Update();
 	CClouds::RenderBackground(TopRed, TopGreen, TopBlue, BottomRed, BottomGreen, BottomBlue, Alpha);
 
@@ -1122,9 +1122,9 @@ Idle(void *arg)
 		CameraSize(Scene.camera, nil, SCREEN_VIEWWINDOW, DEFAULT_ASPECT_RATIO);
 #endif
 		CVisibilityPlugins::SetRenderWareCamera(Scene.camera);
-		RwCameraClear(Scene.camera, &gColourTop, rwCAMERACLEARZ);
 		if(!RsCameraBeginUpdate(Scene.camera))
 			return;
+		RwCameraClear(Scene.camera, &gColourTop, rwCAMERACLEARZ);
 	}
 
 	tbStartTimer(0, "RenderMenus");
@@ -1171,10 +1171,10 @@ FrontendIdle(void)
 
 	CameraSize(Scene.camera, nil, SCREEN_VIEWWINDOW, SCREEN_ASPECT_RATIO);
 	CVisibilityPlugins::SetRenderWareCamera(Scene.camera);
-	RwCameraClear(Scene.camera, &gColourTop, rwCAMERACLEARZ);
 	if(!RsCameraBeginUpdate(Scene.camera))
 		return;
-
+	RwCameraClear(Scene.camera, &gColourTop, rwCAMERACLEARZ);
+	
 	DefinedState(); // seems redundant, but breaks resolution change.
 	RenderMenus();
 	DoFade();
@@ -1447,9 +1447,9 @@ void TheGame(void)
 			{
 				CameraSize(Scene.camera, NULL, SCREEN_VIEWWINDOW, SCREEN_ASPECT_RATIO);
 				CVisibilityPlugins::SetRenderWareCamera(Scene.camera);
-				RwCameraClear(Scene.camera, &gColourTop, rwCAMERACLEARZ);
 				if (!RsCameraBeginUpdate(Scene.camera))
 					break;
+				RwCameraClear(Scene.camera, &gColourTop, rwCAMERACLEARZ);
 			}
 
 			RenderMenus();

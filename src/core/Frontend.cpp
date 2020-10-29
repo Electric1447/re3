@@ -341,7 +341,11 @@ CMenuManager::CMenuManager()
 	m_PrefsMP3BoostVolume = 0;
 	m_PrefsShowSubtitles = 0;
 	m_PrefsShowLegends = 1;
+#ifdef PSP2
+	m_PrefsUseWideScreen = AR_AUTO;
+#else
 	m_PrefsUseWideScreen = 0;
+#endif
 	m_PrefsVsync = 0;
 	m_PrefsVsyncDisp = 1;
 	m_PrefsFrameLimiter = 1;
@@ -361,7 +365,11 @@ CMenuManager::CMenuManager()
 	DisplayComboButtonErrMsg = false;
 	m_PrefsDMA = 1;
 	OS_Language = LANG_ENGLISH;
+#ifdef PSP2
+	m_ControlMethod = CONTROL_CLASSIC;
+#else
 	m_ControlMethod = CONTROL_STANDARD;
+#endif
 	CCamera::m_bUseMouse3rdPerson = true;
 	m_lastWorking3DAudioProvider = 0;
 	m_nFirstVisibleRowOnList = 0;
