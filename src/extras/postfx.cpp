@@ -13,6 +13,10 @@
 #include "MBlur.h"
 #include "postfx.h"
 
+#ifdef PSP2
+extern GLuint fxraster;
+#endif
+
 RwRaster *CPostFX::pFrontBuffer;
 RwRaster *CPostFX::pBackBuffer;
 bool CPostFX::bJustInitialised;
@@ -150,22 +154,38 @@ CPostFX::Open(RwCamera *cam)
 #endif
 #ifdef RW_OPENGL
 	using namespace rw::gl3;
-
+#ifdef PSP2
+#include "shaders/im2d_v.h"
+#endif
 	{
+#ifdef PSP2
+#include "shaders/colourfilterVC_f.h"
+	const char *vs[] = { (const char*)im2d_v, (const char*)&size_im2d_v, nil };
+	const char *fs[] = { (const char*)colourfilterVC_f, (const char*)&size_colourfilterVC_f, nil };
+	colourFilterVC = Shader::create(vs, fs, true);
+#else
 #include "shaders/im2d_gl.inc"
 #include "shaders/colourfilterVC_fs_gl.inc"
 	const char *vs[] = { shaderDecl, header_vert_src, im2d_vert_src, nil };
 	const char *fs[] = { shaderDecl, header_frag_src, colourfilterVC_frag_src, nil };
 	colourFilterVC = Shader::create(vs, fs);
+#endif
 	assert(colourFilterVC);
 	}
 
 	{
+#ifdef PSP2
+#include "shaders/contrast_f.h"
+	const char *vs[] = { (const char*)im2d_v, (const char*)&size_im2d_v, nil };
+	const char *fs[] = { (const char*)contrast_f, (const char*)&size_contrast_f, nil };
+	contrast = Shader::create(vs, fs, true);
+#else
 #include "shaders/im2d_gl.inc"
 #include "shaders/contrast_fs_gl.inc"
 	const char *vs[] = { shaderDecl, header_vert_src, im2d_vert_src, nil };
 	const char *fs[] = { shaderDecl, header_frag_src, contrast_frag_src, nil };
 	contrast = Shader::create(vs, fs);
+#endif
 	assert(contrast);
 	}
 
@@ -302,6 +322,9 @@ CPostFX::RenderOverlayShader(RwCamera *cam, int32 r, int32 g, int32 b, int32 a)
 		glUniform4fv(colourFilterVC->uniformLocations[u_blurcolor], 1, blurcolors);
 #endif
 	}
+#ifdef PSP2
+	glBindTexture(GL_TEXTURE_2D, fxraster);
+#endif
 	RwIm2DRenderIndexedPrimitive(rwPRIMTYPETRILIST, Vertex, 4, Index, 6);
 #ifdef RW_D3D9
 	rw::d3d::im2dOverridePS = nil;
@@ -398,10 +421,10 @@ CPostFX::Render(RwCamera *cam, uint32 red, uint32 green, uint32 blue, uint32 blu
 		blue = AvgBlue;
 		blur = AvgAlpha;
 	}
-
+#ifndef PSP2
 	if(NeedBackBuffer())
 		GetBackBuffer(cam);
-
+#endif
 	DefinedState();
 
 	RwRenderStateSet(rwRENDERSTATEFOGENABLE, (void*)FALSE);
