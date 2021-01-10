@@ -497,7 +497,11 @@ CMenuManager::CMenuManager()
 	DisplayComboButtonErrMsg = false;
 	m_PrefsDMA = 1;
 	OS_Language = LANG_ENGLISH;
+#ifdef PSP2
+	m_ControlMethod = CONTROL_CLASSIC;
+#else
 	m_ControlMethod = CONTROL_STANDARD;
+#endif
 #ifdef PC_PLAYER_CONTROLS
 	CCamera::m_bUseMouse3rdPerson = true;
 #else

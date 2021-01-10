@@ -51,6 +51,7 @@ using namespace re3_openal;
 
 void EFXInit()
 {
+#ifndef PSP2
 	/* Define a macro to help load the function pointers. */
 #define LOAD_PROC(T, x)  ((x) = (T)alGetProcAddress(#x))
 	LOAD_PROC(LPALGENEFFECTS, alGenEffects);
@@ -89,13 +90,16 @@ void EFXInit()
 	LOAD_PROC(LPALGETAUXILIARYEFFECTSLOTF, alGetAuxiliaryEffectSlotf);
 	LOAD_PROC(LPALGETAUXILIARYEFFECTSLOTFV, alGetAuxiliaryEffectSlotfv);
 #undef LOAD_PROC
+#endif
 }
 
 void SetEffectsLevel(ALuint uiFilter, float level)
 {
+#ifndef PSP2
 	alFilteri(uiFilter, AL_FILTER_TYPE, AL_FILTER_LOWPASS);
 	alFilterf(uiFilter, AL_LOWPASS_GAIN, 1.0f);
 	alFilterf(uiFilter, AL_LOWPASS_GAINHF, level);
+#endif
 }
 
 static inline float gain_to_mB(float gain)
@@ -117,6 +121,7 @@ static inline float clampF(float val, float minval, float maxval)
 
 void EAX3_Set(ALuint effect, const EAXLISTENERPROPERTIES *props)
 {
+#ifndef PSP2
 	alEffecti (effect, AL_EFFECT_TYPE,                     AL_EFFECT_EAXREVERB);
 	alEffectf (effect, AL_EAXREVERB_DENSITY,               clampF(powf(props->flEnvironmentSize, 3.0f) / 16.0f, 0.0f, 1.0f));
 	alEffectf (effect, AL_EAXREVERB_DIFFUSION,             props->flEnvironmentDiffusion);
@@ -141,10 +146,12 @@ void EAX3_Set(ALuint effect, const EAXLISTENERPROPERTIES *props)
 	alEffectf (effect, AL_EAXREVERB_LFREFERENCE,           props->flLFReference);
 	alEffectf (effect, AL_EAXREVERB_ROOM_ROLLOFF_FACTOR,   props->flRoomRolloffFactor);
 	alEffecti (effect, AL_EAXREVERB_DECAY_HFLIMIT,         (props->ulFlags&EAXLISTENERFLAGS_DECAYHFLIMIT) ? AL_TRUE : AL_FALSE);
+#endif
 }
 
 void EFX_Set(ALuint effect, const EAXLISTENERPROPERTIES *props)
 {
+#ifndef PSP2
 	alEffecti(effect, AL_EFFECT_TYPE, AL_EFFECT_REVERB);
 	
 	alEffectf(effect, AL_REVERB_DENSITY,               clampF(powf(props->flEnvironmentSize, 3.0f) / 16.0f, 0.0f, 1.0f));
@@ -160,10 +167,12 @@ void EFX_Set(ALuint effect, const EAXLISTENERPROPERTIES *props)
 	alEffectf(effect, AL_REVERB_AIR_ABSORPTION_GAINHF, clampF(mB_to_gain(props->flAirAbsorptionHF), AL_EAXREVERB_MIN_AIR_ABSORPTION_GAINHF, AL_EAXREVERB_MAX_AIR_ABSORPTION_GAINHF));
 	alEffectf(effect, AL_REVERB_ROOM_ROLLOFF_FACTOR,   props->flRoomRolloffFactor);
 	alEffecti(effect, AL_REVERB_DECAY_HFLIMIT,         (props->ulFlags&EAXLISTENERFLAGS_DECAYHFLIMIT) ? AL_TRUE : AL_FALSE);
+#endif
 }
 
 void EAX3_SetReverbMix(ALuint filter, float mix)
 {
+#ifndef PSP2
 	//long vol=(long)linear_to_dB(mix);
 	//DSPROPERTY_EAXBUFFER_ROOMHF,
 	//DSPROPERTY_EAXBUFFER_ROOM,
@@ -176,6 +185,7 @@ void EAX3_SetReverbMix(ALuint filter, float mix)
 	alFilteri(filter, AL_FILTER_TYPE, AL_FILTER_LOWPASS);
 	alFilterf(filter, AL_LOWPASS_GAIN,   mB_to_gain(Min(mb, 0.0f)));
 	alFilterf(filter, AL_LOWPASS_GAINHF, mB_to_gain(mbhf));
+#endif
 }
 
 #endif

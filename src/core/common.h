@@ -1,5 +1,11 @@
 #pragma once
 
+#ifdef PSP2
+extern "C"{
+#include <math_neon.h>
+};
+#endif
+
 #define _CRT_SECURE_NO_WARNINGS
 #define _USE_MATH_DEFINES
 #pragma warning(disable: 4244)	// int to float
@@ -470,7 +476,12 @@ inline void SkipSaveBuf(uint8*& buf, uint32 &length, int32 skip)
 template<typename T>
 inline const T ReadSaveBuf(uint8 *&buf)
 {
+#if !defined(PSP2)
 	T &value = *(T*)buf;
+#else
+	T value;
+	memcpy_neon(&value, buf, sizeof(T));
+#endif
 	SkipSaveBuf(buf, sizeof(T));
 	return value;
 }
@@ -478,7 +489,12 @@ inline const T ReadSaveBuf(uint8 *&buf)
 template<typename T>
 inline const T ReadSaveBuf(uint8 *&buf, uint32 &length)
 {
+#if !defined(PSP2)
 	T &value = *(T*)buf;
+#else
+	T value;
+	memcpy_neon(&value, buf, sizeof(T));
+#endif
 	SkipSaveBuf(buf, length, sizeof(T));
 	return value;
 }
@@ -486,8 +502,13 @@ inline const T ReadSaveBuf(uint8 *&buf, uint32 &length)
 template<typename T>
 inline T *WriteSaveBuf(uint8 *&buf, const T &value)
 {
+
 	T *p = (T*)buf;
+#if !defined(PSP2)
 	*p = value;
+#else
+	memcpy_neon(p, &value, sizeof(T));
+#endif
 	SkipSaveBuf(buf, sizeof(T));
 	return p;
 }
@@ -496,7 +517,11 @@ template<typename T>
 inline T *WriteSaveBuf(uint8 *&buf, uint32 &length, const T &value)
 {
 	T *p = (T*)buf;
+#if !defined(PSP2)
 	*p = value;
+#else
+	memcpy_neon(p, &value, sizeof(T));
+#endif
 	SkipSaveBuf(buf, length, sizeof(T));
 	return p;
 }

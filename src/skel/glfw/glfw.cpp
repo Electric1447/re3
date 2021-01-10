@@ -44,6 +44,10 @@
 
 #define MAX_SUBSYSTEMS		(16)
 
+#ifdef PSP2
+int _newlib_heap_size_user = 256 * 1024 * 1024;
+#endif
+
 // --MIAMI: file done
 
 rw::EngineOpenParams openParams;
@@ -80,7 +84,9 @@ DWORD _dwOperatingSystemVersion;
 #else
 long _dwOperatingSystemVersion;
 #ifndef __APPLE__
+#ifndef PSP2
 #include <sys/sysinfo.h>
+#endif
 #else
 #include <mach/mach_host.h>
 #include <sys/sysctl.h>
@@ -465,7 +471,7 @@ psInitialize(void)
 	_dwMemAvailPhys = (uint64_t)(vm_stat.free_count * page_size);
 	debug("Physical memory size %llu\n", _dwMemAvailPhys);
 	debug("Available physical memory %llu\n", size);
-#else
+#elif !defined(PSP2)
 #ifndef __APPLE__
  	struct sysinfo systemInfo;
 	sysinfo(&systemInfo);
@@ -849,14 +855,14 @@ psSelectDevice()
 #endif
 	return TRUE;
 }
-
+#ifndef PSP2
 void keypressCB(GLFWwindow* window, int key, int scancode, int action, int mods);
 void resizeCB(GLFWwindow* window, int width, int height);
 void scrollCB(GLFWwindow* window, double xoffset, double yoffset);
 void cursorCB(GLFWwindow* window, double xpos, double ypos);
 void cursorEnterCB(GLFWwindow* window, int entered);
 void joysChangeCB(int jid, int event);
-
+#endif
 bool IsThisJoystickBlacklisted(int i)
 {
 #ifndef DONT_TRUST_RECOGNIZED_JOYSTICKS
@@ -879,7 +885,7 @@ void _InputInitialiseJoys()
 {
 	PSGLOBAL(joy1id) = -1;
 	PSGLOBAL(joy2id) = -1;
-
+#ifndef PSP2
 	// Load our gamepad mappings.
 #define SDL_GAMEPAD_DB_PATH "gamecontrollerdb.txt"
 	FILE *f = fopen(SDL_GAMEPAD_DB_PATH, "rb");
@@ -909,7 +915,7 @@ void _InputInitialiseJoys()
 	if (EnvControlConfig != nil) {
 		glfwUpdateGamepadMappings(EnvControlConfig);
 	}
-
+#endif
 	for (int i = 0; i <= GLFW_JOYSTICK_LAST; i++) {
 		if (glfwJoystickPresent(i) && !IsThisJoystickBlacklisted(i)) {
 			if (PSGLOBAL(joy1id) == -1)
@@ -931,12 +937,16 @@ void _InputInitialiseJoys()
 	}
 }
 
+#ifndef PSP2
 int lastCursorMode = GLFW_CURSOR_HIDDEN;
+#endif
 long _InputInitialiseMouse(bool exclusive)
 {
+#ifndef PSP2
 	// Disabled = keep cursor centered and hide
 	lastCursorMode = exclusive ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_HIDDEN;
 	glfwSetInputMode(PSGLOBAL(window), GLFW_CURSOR, lastCursorMode);
+#endif
 	return 0;
 }
 
@@ -955,27 +965,31 @@ bool _InputMouseNeedsExclusive()
 
 	// If windowed, free the cursor on menu(where this func. is called and DISABLED-HIDDEN transition is done accordingly)
 	// If it's fullscreen, be sure that it didn't stuck on HIDDEN.
+#ifdef PSP2
+	return !(vm.flags & rwVIDEOMODEEXCLUSIVE);
+#else
 	return !(vm.flags & rwVIDEOMODEEXCLUSIVE) || lastCursorMode == GLFW_CURSOR_HIDDEN;
+#endif
 }
 
 void psPostRWinit(void)
 {
 	RwVideoMode vm;
 	RwEngineGetVideoModeInfo(&vm, GcurSelVM);
-
+#ifndef PSP2
 	glfwSetKeyCallback(PSGLOBAL(window), keypressCB);
 	glfwSetFramebufferSizeCallback(PSGLOBAL(window), resizeCB);
 	glfwSetScrollCallback(PSGLOBAL(window), scrollCB);
 	glfwSetCursorPosCallback(PSGLOBAL(window), cursorCB);
 	glfwSetCursorEnterCallback(PSGLOBAL(window), cursorEnterCB);
 	glfwSetJoystickCallback(joysChangeCB);
-
+#endif
 	_InputInitialiseJoys();
 	_InputInitialiseMouse(false);
-
+#ifndef PSP2
 	if(!(vm.flags & rwVIDEOMODEEXCLUSIVE))
 		glfwSetWindowSize(PSGLOBAL(window), RsGlobal.maximumWidth, RsGlobal.maximumHeight);
-
+#endif
 	// Make sure all keys are released
 	CPad::GetPad(0)->Clear(true);
 	CPad::GetPad(1)->Clear(true);
@@ -1273,7 +1287,7 @@ void HandleExit()
 #endif
 }
 
-#ifndef _WIN32
+#if defined(_WIN32) && !defined(PSP2)
 void terminateHandler(int sig, siginfo_t *info, void *ucontext) {
 	RsGlobal.quit = TRUE;
 }
@@ -1283,7 +1297,7 @@ void dummyHandler(int sig){
 }
 
 #endif
-
+#ifndef PSP2
 void resizeCB(GLFWwindow* window, int width, int height) {
 	/*
 	* Handle event to ensure window contents are displayed during re-size
@@ -1468,14 +1482,16 @@ keypressCB(GLFWwindow* window, int key, int scancode, int action, int mods)
 		else if (action == GLFW_REPEAT) RsKeyboardEventHandler(rsKEYDOWN, &ks);
 	}
 }
-
+#endif
 // R* calls that in ControllerConfig, idk why
 void
 _InputTranslateShiftKeyUpDown(RsKeyCodes *rs) {
+#ifndef PSP2
 	RsKeyboardEventHandler(lshiftStatus ? rsKEYDOWN : rsKEYUP, &(*rs = rsLSHIFT));
 	RsKeyboardEventHandler(rshiftStatus ? rsKEYDOWN : rsKEYUP, &(*rs = rsRSHIFT));
+#endif
 }
-
+#ifndef PSP2
 // TODO this only works in frontend(and luckily only frontend use this). Fun fact: if I get pos manually in game, glfw reports that it's > 32000
 void
 cursorCB(GLFWwindow* window, double xpos, double ypos) {
@@ -1492,7 +1508,7 @@ void
 cursorEnterCB(GLFWwindow* window, int entered) {
 	PSGLOBAL(cursorIsInWindow) = !!entered;
 }
-
+#endif
 /*
  *****************************************************************************
  */
@@ -1522,6 +1538,14 @@ WinMain(HINSTANCE instance,
 int
 main(int argc, char *argv[])
 {
+#ifdef PSP2
+	sceCtrlSetSamplingModeExt(SCE_CTRL_MODE_ANALOG);
+	sceTouchSetSamplingState(SCE_TOUCH_PORT_FRONT, SCE_TOUCH_SAMPLING_STATE_START);
+	scePowerSetArmClockFrequency(444);
+	scePowerSetBusClockFrequency(222);
+	scePowerSetGpuClockFrequency(222);
+	scePowerSetGpuXbarClockFrequency(166);
+#endif
 #endif
 	RwV2d pos;
 	RwInt32 i;
@@ -1530,7 +1554,7 @@ main(int argc, char *argv[])
 	InitMemoryMgr();
 #endif
 
-#ifndef _WIN32
+#if defined(_WIN32) && !defined(PSP2)
 	struct sigaction act;
 	act.sa_sigaction = terminateHandler;
 	act.sa_flags = SA_SIGINFO;
@@ -1581,8 +1605,9 @@ main(int argc, char *argv[])
 	openParams.width = RsGlobal.maximumWidth;
 	openParams.height = RsGlobal.maximumHeight;
 	openParams.windowtitle = RsGlobal.appName;
+#ifndef PSP2
 	openParams.window = &PSGLOBAL(window);
-	
+#endif
 	ControlsManager.MakeControllerActionsBlank();
 	ControlsManager.InitDefaultControlConfiguration();
 
@@ -1674,9 +1699,9 @@ main(int argc, char *argv[])
 		FrontEndMenuManager.DrawMemoryCardStartUpMenus();
 	}
 #endif
-	
+#ifndef PSP2	
 	initkeymap();
-
+#endif
 	while ( TRUE )
 	{
 		RwInitialised = TRUE;
@@ -1718,7 +1743,9 @@ main(int argc, char *argv[])
 		while( !RsGlobal.quit && !FrontEndMenuManager.m_bWantToRestart && !glfwWindowShouldClose(PSGLOBAL(window)))
 #endif
 		{
+#ifndef PSP2
 			glfwPollEvents();
+#endif
 #ifndef MASTER
 			if (gbModelViewer) {
 				// This is TheModelViewerCore in LCS
@@ -1857,7 +1884,9 @@ main(int argc, char *argv[])
 					
 					case GS_FRONTEND:
 					{
+#ifndef PSP2
 						if(!glfwGetWindowAttrib(PSGLOBAL(window), GLFW_ICONIFIED))
+#endif
 							RsEventHandler(rsFRONTENDIDLE, nil);
 
 #ifdef PS2_MENU
@@ -2157,7 +2186,7 @@ void CapturePad(RwInt32 padID)
 	
 	return;
 }
-
+#ifndef PSP2
 void joysChangeCB(int jid, int event)
 {
 	if (event == GLFW_CONNECTED && !IsThisJoystickBlacklisted(jid)) {
@@ -2176,7 +2205,7 @@ void joysChangeCB(int jid, int event)
 			PSGLOBAL(joy2id) = -1;
 	}
 }
-
+#endif
 #if (defined(_MSC_VER))
 int strcasecmp(const char* str1, const char* str2)
 {
