@@ -323,9 +323,8 @@ RwGrabScreen(RwCamera *camera, RwChar *filename)
 #define TILE_HEIGHT 432
 
 #ifdef PSP2
-GLuint fxraster = 0xDEADBEEF, fxfb;
+extern GLuint fxfb;
 bool using_fbo = false;
-bool used_fbo = false;
 #endif
 
 void
@@ -1528,23 +1527,6 @@ Idle(void *arg)
 
 		RenderDebugShit();
 		RenderEffects();
-
-#if defined(PSP2) && defined(EXTENDED_COLOURFILTER)
-		if (CPostFX::NeedBackBuffer()) {
-			if(fxraster == 0xDEADBEEF){
-				glGenTextures(1, &fxraster);
-				glBindTexture(GL_TEXTURE_2D, fxraster);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1024, 1024, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-				glGenFramebuffers(1, &fxfb);
-				glBindFramebuffer(GL_FRAMEBUFFER, fxfb);
-				glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fxraster, 0);
-			}
-			using_fbo = true;
-			vglStopRendering();
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			vglStartRendering();
-		}
-#endif
 
 		if((TheCamera.m_BlurType == MOTION_BLUR_NONE || TheCamera.m_BlurType == MOTION_BLUR_LIGHT_SCENE) &&
 		   TheCamera.m_ScreenReductionPercentage > 0.0f)
