@@ -3049,8 +3049,13 @@ CMenuManager::LoadSettings()
 	CFileMgr::SetDir("");
 
 #ifdef LOAD_INI_SETTINGS
-	LoadINISettings();
-	LoadINIControllerSettings(); // Calling that after LoadINISettings is important because of gSelectedJoystickName loading
+	if (LoadINISettings()) {
+		LoadINIControllerSettings();
+	} else {
+		// no re3.ini, create it
+		SaveINISettings();
+		SaveINIControllerSettings();
+	}
 #endif
 
 #ifdef FIX_BUGS
@@ -3164,12 +3169,6 @@ CMenuManager::SaveSettings()
 	
 #else
 	m_lastWorking3DAudioProvider = m_nPrefsAudio3DProviderIndex;
-	static bool firstTime = true;
-	// In other conditions we already call SaveINIControllerSettings explicitly.
-	if (firstTime) {
-		SaveINIControllerSettings();
-		firstTime = false;
-	}
 	SaveINISettings();
 #endif
 }
@@ -5454,6 +5453,9 @@ CMenuManager::SwitchMenuOnAndOff()
 				ThingsToDoBeforeLeavingPage();
 #endif
 				SaveSettings();
+#ifdef LOAD_INI_SETTINGS
+				SaveINIControllerSettings();
+#endif
 				pControlEdit = nil;
 				pEditString = nil;
 				DisplayComboButtonErrMsg = false;
