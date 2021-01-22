@@ -48,8 +48,6 @@
 int _newlib_heap_size_user = 256 * 1024 * 1024;
 #endif
 
-// --MIAMI: file done
-
 rw::EngineOpenParams openParams;
 
 static RwBool		  ForegroundApp = TRUE;

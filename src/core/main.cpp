@@ -528,7 +528,6 @@ Terminate3D(void)
 CSprite2d splash;
 int splashTxdId = -1;
 
-//--MIAMI: done
 CSprite2d*
 LoadSplash(const char *name)
 {
@@ -574,7 +573,6 @@ DestroySplashScreen(void)
 	splashTxdId = -1;
 }
 
-//--MIAMI: done
 Const char*
 GetRandomSplashScreen(void)
 {
@@ -617,7 +615,6 @@ ResetLoadingScreenBar()
 	NumberOfChunksLoaded = 0.0f;
 }
 
-//--MIAMI: done
 void
 LoadingScreen(const char *str1, const char *str2, const char *splashscreen)
 {
@@ -704,7 +701,6 @@ LoadingScreen(const char *str1, const char *str2, const char *splashscreen)
 	}
 }
 
-//--MIAMI: done
 void
 LoadingIslandScreen(const char *levelName)
 {
