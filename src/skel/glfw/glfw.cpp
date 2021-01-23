@@ -1659,6 +1659,7 @@ main(int argc, char *argv[])
 	SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &NewStickyKeys, SPIF_SENDCHANGE);
 #endif
 
+	// This part is needed because controller initialisation overwrites loaded settings.
 	{
 		CFileMgr::SetDirMyDocuments();
 		
@@ -1671,6 +1672,10 @@ main(int argc, char *argv[])
 		}
 		
 		CFileMgr::SetDir("");
+
+#ifdef LOAD_INI_SETTINGS
+		LoadINIControllerSettings();
+#endif
 	}
 	
 #ifdef _WIN32
