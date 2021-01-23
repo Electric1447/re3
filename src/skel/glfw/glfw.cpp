@@ -86,7 +86,6 @@ static psGlobalType PsGlobal;
 size_t _dwMemAvailPhys;
 RwUInt32 gGameState;
 
-
 #ifdef DONT_TRUST_RECOGNIZED_JOYSTICKS
 char gSelectedJoystickName[128] = "";
 #endif
