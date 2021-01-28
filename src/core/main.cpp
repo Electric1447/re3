@@ -3,7 +3,7 @@
 #include "rphanim.h"
 #include "rpskin.h"
 #include "rtbmp.h"
-#ifndef LIBRW
+#ifdef ANISOTROPIC_FILTERING
 #include "rpanisot.h"
 #endif
 
@@ -136,6 +136,24 @@ bool gbNewRenderer;
 
 bool bDisplayNumOfAtomicsRendered = false;
 bool bDisplayPosn = false;
+
+#ifdef __MWERKS__
+void
+debug(char *fmt, ...)
+{
+#ifndef MASTER
+	// TODO put something here
+#endif
+}
+
+void
+Error(char *fmt, ...)
+{
+#ifndef MASTER
+	// TODO put something here
+#endif
+}
+#endif
 
 void
 ValidateVersion()
@@ -417,7 +435,7 @@ PluginAttach(void)
 		
 		return FALSE;
 	}
-#ifndef LIBRW
+#ifdef ANISOTROPIC_FILTERING
 	RpAnisotPluginAttach();
 #endif
 #ifdef EXTENDED_PIPELINES
@@ -528,7 +546,6 @@ Terminate3D(void)
 CSprite2d splash;
 int splashTxdId = -1;
 
-//--MIAMI: done
 CSprite2d*
 LoadSplash(const char *name)
 {
@@ -574,7 +591,6 @@ DestroySplashScreen(void)
 	splashTxdId = -1;
 }
 
-//--MIAMI: done
 Const char*
 GetRandomSplashScreen(void)
 {
@@ -617,7 +633,6 @@ ResetLoadingScreenBar()
 	NumberOfChunksLoaded = 0.0f;
 }
 
-//--MIAMI: done
 void
 LoadingScreen(const char *str1, const char *str2, const char *splashscreen)
 {
@@ -704,7 +719,6 @@ LoadingScreen(const char *str1, const char *str2, const char *splashscreen)
 	}
 }
 
-//--MIAMI: done
 void
 LoadingIslandScreen(const char *levelName)
 {
@@ -819,6 +833,7 @@ ProcessSlowMode(void)
 float FramesPerSecondCounter;
 int32 FrameSamples;
 
+#ifndef MASTER
 struct tZonePrint
 {
 	char name[11];
@@ -848,8 +863,6 @@ tZonePrint ZonePrint[] =
 	{ "WASHINGTN", "AC", CRect(-320.0f, -487.0f,  500.0f, -1200.0f)},
 	{ "WASHINBTM", "AC", CRect(-255.0f, -1200.0f,  500.0f, -1690.0f)}
 };
-
-#ifndef MASTER
 
 void
 PrintMemoryUsage(void)

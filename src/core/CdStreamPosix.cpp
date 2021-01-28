@@ -29,7 +29,9 @@
 #define ONE_THREAD_PER_CHANNEL
 #endif
 
+#ifdef FLUSHABLE_STREAMING
 bool flushStream[MAX_CDCHANNELS];
+#endif
 
 struct CdReadInfo
 {
@@ -118,6 +120,7 @@ CdStreamInitThread(void)
 				ASSERT(0);
 				return;
 			}
+
 #ifdef ONE_THREAD_PER_CHANNEL
 #ifndef PSP2
 			sprintf(semName,"/semaphore_start%d",i);
@@ -277,10 +280,12 @@ CdStreamRead(int32 channel, void *buffer, uint32 offset, uint32 size)
 	if ( pChannel->nSectorsToRead != 0 || pChannel->bReading ) {
 		if (pChannel->hFile == hImage - 1 && pChannel->nSectorOffset == _GET_OFFSET(offset) && pChannel->nSectorsToRead >= size)
 			return STREAM_SUCCESS;
-			
+#ifdef FLUSHABLE_STREAMING
 		flushStream[channel] = 1;
 		CdStreamSync(channel);
-		//return STREAM_NONE;
+#else
+		return STREAM_NONE;
+#endif
 	}
 
 	pChannel->hFile = hImage - 1;
@@ -348,34 +353,34 @@ CdStreamSync(int32 channel)
 	CdReadInfo *pChannel = &gpReadInfo[channel];
 	ASSERT( pChannel != nil );
 
+#ifdef FLUSHABLE_STREAMING
 	if (flushStream[channel]) {
-#ifdef ONE_THREAD_PER_CHANNEL
 		pChannel->nSectorsToRead = 0;
+#ifdef ONE_THREAD_PER_CHANNEL
 		pthread_kill(pChannel->pChannelThread, SIGUSR1);
 		if (pChannel->bReading) {
 			pChannel->bLocked = true;
-			while (pChannel->bLocked)
-				sem_wait(pChannel->pDoneSemaphore);
-		}
 #else
-		pChannel->nSectorsToRead = 0;
 		if (pChannel->bReading) {
 			pChannel->bLocked = true;
 			pthread_kill(_gCdStreamThread, SIGUSR1);
+#endif
 			while (pChannel->bLocked)
 				sem_wait(pChannel->pDoneSemaphore);
 		}
-#endif
 		pChannel->bReading = false;
 		flushStream[channel] = false;
 		return STREAM_NONE;
 	}
+#endif
 
 	if ( pChannel->nSectorsToRead != 0 )
 	{
 		pChannel->bLocked = true;
-		while (pChannel->bLocked)
+		while (pChannel->bLocked && pChannel->nSectorsToRead != 0){
 			sem_wait(pChannel->pDoneSemaphore);
+		}
+		pChannel->bLocked = false;
 	}
 
 	pChannel->bReading = false;
@@ -479,7 +484,7 @@ void *CdStreamThread(void *param)
 		if ( pChannel->bLocked )
 		{
 			pChannel->bLocked = 0;
-			sem_post(pChannel->pDoneSemaphore);	
+			sem_post(pChannel->pDoneSemaphore);
 		}
 		pChannel->bReading = false;
 	}
@@ -573,7 +578,9 @@ void
 CdStreamRemoveImages(void)
 {
 	for ( int32 i = 0; i < gNumChannels; i++ ) {
+#ifdef FLUSHABLE_STREAMING
 		flushStream[i] = 1;
+#endif
 		CdStreamSync(i);
 	}
 

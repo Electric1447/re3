@@ -30,8 +30,6 @@
 #include "Bike.h"
 #include "Pickups.h"
 
-//--MIAMI: file done
-
 bool PrintDebugCode = false;
 int16 DebugCamMode;
 
@@ -949,7 +947,7 @@ CVector
 CCam::DoAverageOnVector(const CVector &vec)
 {
 	int i;
-	CVector Average = { 0.0f, 0.0f, 0.0f };
+	CVector Average = CVector(0.0f, 0.0f, 0.0f);
 
 	if(ResetStatics){
 		m_iRunningVectorArrayPos = 0;
@@ -4031,7 +4029,7 @@ CCam::Process_Debug(const CVector&, float, float, float)
 	if(CPad::GetPad(1)->GetLeftShockJustDown() && gbBigWhiteDebugLightSwitchedOn)
 		CShadows::StoreShadowToBeRendered(SHADOWTYPE_ADDITIVE, gpShadowExplosionTex, &Source,
 			12.0f, 0.0f, 0.0f, -12.0f,
-			128, 128, 128, 128, 1000.0f, false, 1.0f);
+			128, 128, 128, 128, 1000.0f, false, 1.0f, nil, 1.0f);
 
 	if(CHud::m_Wants_To_Draw_Hud){
 		char str[256];
@@ -5060,10 +5058,14 @@ CCam::Process_FollowCar_SA(const CVector& CameraTarget, float TargetOrientation,
 
 	// Using GetCarGun(LR/UD) will give us same unprocessed RightStick value as SA
 	float stickX = -(pad->GetCarGunLeftRight());
-	float stickY = pad->GetCarGunUpDown();
+	float stickY = -pad->GetCarGunUpDown();
 
-	if (CCamera::m_bUseMouse3rdPerson)
+	// In SA this checks for m_bUseMouse3rdPerson so num2 / num8 do not move camera
+	// when Keyboard & Mouse controls are used. To make it work better with III/VC, check for actual pad state instead
+	if (!CPad::IsAffectedByController && !isCar)
 		stickY = 0.0f;
+	else if (CPad::bInvertLook4Pad)
+		stickY = -stickY;
 
 	float xMovement = Abs(stickX) * (FOV / 80.0f * 5.f / 70.f) * stickX * 0.007f * 0.007f;
 	float yMovement = Abs(stickY) * (FOV / 80.0f * 3.f / 70.f) * stickY * 0.007f * 0.007f;

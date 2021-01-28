@@ -4,7 +4,6 @@
 #include "CopPed.h"
 #include "CutsceneMgr.h"
 #include "DMAudio.h"
-#include "Entity.h"
 #include "EventList.h"
 #include "Explosion.h"
 #include "Fire.h"
@@ -12,11 +11,8 @@
 #include "Glass.h"
 #include "Messages.h"
 #include "ModelIndices.h"
-#include "Object.h"
 #include "ParticleObject.h"
-#include "Ped.h"
 #include "Pickups.h"
-#include "PlayerPed.h"
 #include "Population.h"
 #include "ProjectileInfo.h"
 #include "Record.h"
@@ -25,11 +21,8 @@
 #include "RpAnimBlend.h"
 #include "Shadows.h"
 #include "TempColModels.h"
-#include "Vehicle.h"
 #include "WaterLevel.h"
 #include "World.h"
-
-// --MIAMI: file done
 
 #define OBJECT_REPOSITION_OFFSET_Z 2.0f
 
@@ -374,7 +367,7 @@ CWorld::ProcessLineOfSightSectorList(CPtrList &list, const CColLine &line, CColP
 			} else if(e->bUsesCollision)
 				colmodel = CModelInfo::GetModelInfo(e->GetModelIndex())->GetColModel();
 
-			if(colmodel && CCollision::ProcessLineOfSight(line, e->GetMatrix(), *colmodel, point, dist,
+			if(colmodel && CCollision::ProcessLineOfSight(line, e->GetMatrix(), *colmodel, point, mindist,
 			                                              ignoreSeeThrough, ignoreShootThrough))
 				entity = e;
 			if(carTyres && ((CVehicle*)e)->SetUpWheelColModel(&tyreCol) && CCollision::ProcessLineOfSight(line, e->GetMatrix(), tyreCol, tyreColPoint, tyreDist, false, ignoreShootThrough)){
@@ -473,7 +466,7 @@ CWorld::ProcessVerticalLineSectorList(CPtrList &list, const CColLine &line, CCol
 			e->m_scanCode = GetCurrentScanCode();
 
 			colmodel = CModelInfo::GetModelInfo(e->GetModelIndex())->GetColModel();
-			if(CCollision::ProcessVerticalLine(line, e->GetMatrix(), *colmodel, point, dist,
+			if(CCollision::ProcessVerticalLine(line, e->GetMatrix(), *colmodel, point, mindist,
 			                                   ignoreSeeThrough, false, poly))
 				entity = e;
 		}

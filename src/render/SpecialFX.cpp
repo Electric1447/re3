@@ -645,8 +645,6 @@ MarkerAtomicCB(RpAtomic *atomic, void *data)
 	return atomic;
 }
 
-// --MIAMI: C3dMarker and C3dMarkers done
-
 bool
 C3dMarker::AddMarker(uint32 identifier, uint16 type, float fSize, uint8 r, uint8 g, uint8 b, uint8 a, uint16 pulsePeriod, float pulseFraction, int16 rotateRate)
 {
@@ -871,7 +869,7 @@ C3dMarkers::PlaceMarker(uint32 identifier, uint16 type, CVector &pos, float size
 				pMarker->m_Color.alpha = (float)a * 0.4f * someSin + a;
 		}
 		if (pMarker->m_nRotateRate != 0) {
-			RwV3d pos = pMarker->m_Matrix.m_matrix.pos;
+			CVector pos = pMarker->m_Matrix.GetPosition();
 			pMarker->m_Matrix.RotateZ(DEGTORAD(pMarker->m_nRotateRate * CTimer::GetTimeStep()));
 			pMarker->m_Matrix.GetPosition() = pos;
 		}
@@ -1421,7 +1419,7 @@ CMoneyMessages::RegisterOne(CVector vecPos, const char *pText, uint8 bRed, uint8
 }
 
 CRGBA FoamColour(255, 255, 255, 255);
-unsigned int CSpecialParticleStuff::BoatFromStart;
+uint32 CSpecialParticleStuff::BoatFromStart;
 
 void
 CSpecialParticleStuff::CreateFoamAroundObject(CMatrix* pMatrix, float innerFw, float innerRg, float innerUp, int32 particles)

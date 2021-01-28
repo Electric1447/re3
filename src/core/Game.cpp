@@ -1,6 +1,3 @@
-#pragma warning( push )
-#pragma warning( disable : 4005)
-#pragma warning( pop )
 #include "common.h"
 #include "platform.h"
 
@@ -10,7 +7,6 @@
 #include "Accident.h"
 #include "Antennas.h"
 #include "Bridge.h"
-#include "Camera.h"
 #include "CarCtrl.h"
 #include "CarGen.h"
 #include "CdStream.h"
@@ -69,7 +65,6 @@
 #include "Skidmarks.h"
 #include "SetPieces.h"
 #include "SpecialFX.h"
-#include "Sprite2d.h"
 #include "Stats.h"
 #include "Streaming.h"
 #include "SurfaceTable.h"
@@ -121,7 +116,9 @@ bool8 CGame::VarUpdatePlayerCoords;
 
 int gameTxdSlot;
 
-// --MIAMI: File done
+#ifdef SECUROM
+uint8 gameProcessPirateCheck = 0;
+#endif
 
 bool DoRWStuffStartOfFrame(int16 TopRed, int16 TopGreen, int16 TopBlue, int16 BottomRed, int16 BottomGreen, int16 BottomBlue, int16 Alpha);
 void DoRWStuffEndOfFrame(void);
@@ -845,7 +842,14 @@ void CGame::Process(void)
 		FrontEndMenuManager.Process();
 
 	CTheZones::Update();
-	// DRM call in here
+#ifdef SECUROM
+	if (CTimer::GetTimeInMilliseconds() >= (35 * 60 * 1000) && gameProcessPirateCheck == 0){
+		// if game not pirated
+		// gameProcessPirateCheck = 1;
+		// else
+		gameProcessPirateCheck = 2;
+	}
+#endif
 	uint32 startTime = CTimer::GetCurrentTimeInCycles() / CTimer::GetCyclesPerMillisecond();
 	CStreaming::Update();
 	uint32 processTime = CTimer::GetCurrentTimeInCycles() / CTimer::GetCyclesPerMillisecond() - startTime;

@@ -16,8 +16,6 @@
 #include "General.h"
 #include "Object.h"
 
-//--MIAMI: file done
-
 #define ROADBLOCKDIST (90.0f)
 #define ROADBLOCK_OBJECT_WIDTH (4.0f)
 
@@ -25,6 +23,10 @@ int16 CRoadBlocks::NumRoadBlocks;
 int16 CRoadBlocks::RoadBlockNodes[NUMROADBLOCKS];
 bool CRoadBlocks::InOrOut[NUMROADBLOCKS];
 CScriptRoadblock CRoadBlocks::aScriptRoadBlocks[NUM_SCRIPT_ROADBLOCKS];
+
+#ifdef SECUROM
+uint8 roadBlocksPirateCheck = 0;
+#endif
 
 void
 CRoadBlocks::Init(void)
@@ -53,8 +55,8 @@ CRoadBlocks::Init(void)
 void
 CRoadBlocks::GenerateRoadBlockCopsForCar(CVehicle* pVehicle, int32 roadBlockType)
 {
-	static const CVector vecRoadBlockOffets[6] = { {-1.5, 1.8f, 0.0f}, {-1.5f, -1.8f, 0.0f}, {1.5f, 1.8f, 0.0f},
-	{1.5f, -1.8f, 0.0f}, {-1.5f, 0.0f, 0.0f}, {1.5, 0.0, 0.0} };
+	static const CVector vecRoadBlockOffets[6] = { CVector(-1.5, 1.8f, 0.0f), CVector(-1.5f, -1.8f, 0.0f), CVector(1.5f, 1.8f, 0.0f),
+	CVector(1.5f, -1.8f, 0.0f), CVector(-1.5f, 0.0f, 0.0f), CVector(1.5, 0.0, 0.0) };
 	CEntity* pEntityToAttack = (CEntity*)FindPlayerVehicle();
 	if (!pEntityToAttack)
 		pEntityToAttack = (CEntity*)FindPlayerPed();
@@ -189,6 +191,13 @@ CRoadBlocks::RegisterScriptRoadBlock(CVector vInf, CVector vSup)
 void 
 CRoadBlocks::CreateRoadBlockBetween2Points(CVector point1, CVector point2)
 {
+#ifdef SECUROM
+	if (roadBlocksPirateCheck == 0)
+		// if not pirated game
+		// roadBlocksPirateCheck = 1;
+		// else
+		roadBlocksPirateCheck = 2;
+#endif
 	CMatrix tmp;
 	CVector forward = (point2 - point1);
 	float distBetween = forward.Magnitude();

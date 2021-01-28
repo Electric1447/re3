@@ -1,4 +1,4 @@
-﻿#include "common.h"
+#include "common.h"
 
 #include "main.h"
 #include "General.h"
@@ -27,8 +27,7 @@
 #include "RpAnimBlend.h"
 #include "Record.h"
 #include "Shadows.h"
-
-//--MIAMI: file done
+#include "Wanted.h"
 
 #define INVALID_ORIENTATION (-9999.99f)
 
@@ -135,9 +134,9 @@ CBoat::ProcessControl(void)
 		m_fBuoyancy *= 0.99f;
 
 #ifdef FIX_BUGS
-	if(FindPlayerPed() && FindPlayerPed()->m_pWanted->m_nWantedLevel > 0 && GetModelIndex() == MI_PREDATOR){
+	if(FindPlayerPed() && FindPlayerPed()->m_pWanted->GetWantedLevel() > 0 && GetModelIndex() == MI_PREDATOR){
 #else
-	if(FindPlayerPed()->m_pWanted->m_nWantedLevel > 0 && GetModelIndex() == MI_PREDATOR){
+	if(FindPlayerPed()->m_pWanted->GetWantedLevel() > 0 && GetModelIndex() == MI_PREDATOR){
 #endif
 		CVehicle *playerVeh = FindPlayerVehicle();
 		if(playerVeh && playerVeh->GetVehicleAppearance() == VEHICLE_APPEARANCE_BOAT &&
@@ -964,7 +963,14 @@ CBoat::PreRender(void)
 			// FIX: Planes can also be controlled with GetCarGunUpDown
 #ifdef FIX_BUGS
 			static float steeringUpDown = 0.0f;
-			steeringUpDown += ((Abs(CPad::GetPad(0)->GetCarGunUpDown()) > 1.0f ? (-CPad::GetPad(0)->GetCarGunUpDown() / 128.0f) : (-CPad::GetPad(0)->GetSteeringUpDown() / 128.0f)) - steeringUpDown) * Min(1.f, CTimer::GetTimeStep() / 5.f);
+#ifdef FREE_CAM
+			if(!CCamera::bFreeCam || (CCamera::bFreeCam && !CPad::IsAffectedByController))
+#endif
+			steeringUpDown += ((Abs(CPad::GetPad(0)->GetCarGunUpDown()) > 1.0f ? (-CPad::GetPad(0)->GetCarGunUpDown()/128.0f) : (-CPad::GetPad(0)->GetSteeringUpDown()/128.0f)) - steeringUpDown) * Min(1.f, CTimer::GetTimeStep()/5.f);
+#ifdef FREE_CAM
+			else
+				steeringUpDown = -CPad::GetPad(0)->GetSteeringUpDown()/128.0f;
+#endif
 #else
 			float steeringUpDown = -CPad::GetPad(0)->GetSteeringUpDown()/128.0f;
 #endif
@@ -1246,7 +1252,7 @@ CBoat::Teleport(CVector v)
 	CWorld::Add(this);
 }
 
-//--MIAMI: unused
+// unused
 bool
 CBoat::IsSectorAffectedByWake(CVector2D sector, float fSize, CBoat **apBoats)
 {
@@ -1278,7 +1284,7 @@ CBoat::IsSectorAffectedByWake(CVector2D sector, float fSize, CBoat **apBoats)
 	return numVerts != 0;
 }
 
-//--MIAMI: unused
+// unused
 float
 CBoat::IsVertexAffectedByWake(CVector vecVertex, CBoat *pBoat)
 {

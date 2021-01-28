@@ -33,8 +33,6 @@
 #include "Weather.h"
 #include "Coronas.h"
 
-//--MIAMI: done
-
 bool CVehicle::bWheelsOnlyCheat;
 bool CVehicle::bAllDodosCheat;
 bool CVehicle::bCheat3;
@@ -332,8 +330,11 @@ CVehicle::FlyingControl(eFlightModel flightModel)
 	case FLIGHT_MODEL_PLANE:
 	{
 		float fSteerLR = CPad::GetPad(0)->GetSteeringLeftRight() / 128.0f;
-		float fSteerUD = -CPad::GetPad(0)->GetSteeringUpDown() / 128.0f;
+		float fSteerUD = CPad::GetPad(0)->GetSteeringUpDown() / 128.0f;
 		float fGunUD = Abs(CPad::GetPad(0)->GetCarGunUpDown());
+#ifdef FREE_CAM
+		if(!CCamera::bFreeCam || (CCamera::bFreeCam && !CPad::IsAffectedByController))
+#endif
 		if(fGunUD > 1.0f)
 			fSteerUD = -CPad::GetPad(0)->GetCarGunUpDown() / 128.0f;
 
@@ -507,9 +508,15 @@ CVehicle::FlyingControl(eFlightModel flightModel)
 			fYaw = CPad::GetPad(0)->GetLookRight();
 			if (CPad::GetPad(0)->GetLookLeft())
 				fYaw = -1.0f;
+#ifdef FREE_CAM
+			if (!CCamera::bFreeCam || (CCamera::bFreeCam && !CPad::IsAffectedByController))
+#endif
 			if(Abs(CPad::GetPad(0)->GetCarGunLeftRight()) > 1.0f)
 				fYaw = CPad::GetPad(0)->GetCarGunLeftRight() / 128.0f;
 		}
+#ifdef FREE_CAM
+		if(!CCamera::bFreeCam || (CCamera::bFreeCam && !CPad::IsAffectedByController))
+#endif
 		if(Abs(CPad::GetPad(0)->GetCarGunUpDown()) > 1.0f)
 			fPitch = -CPad::GetPad(0)->GetCarGunUpDown() / 128.0f;
 		if (CPad::GetPad(0)->GetHorn()) {
@@ -1486,7 +1493,7 @@ CVehicle::MakeNonDraggedPedsLeaveVehicle(CPed *ped1, CPed *ped2, CPlayerPed *&pl
 	cop = nil;
 
 	if(ped1->IsPlayer() && ped2->m_nPedType == PEDTYPE_COP &&
-	   ((CPlayerPed*)ped1)->m_pWanted->m_nWantedLevel > 0 &&
+	   ((CPlayerPed*)ped1)->m_pWanted->GetWantedLevel() > 0 &&
 	   ped2->m_pedInObjective == ped1){
 		player = (CPlayerPed*)ped1;
 		cop = (CCopPed*)ped2;
@@ -1516,7 +1523,7 @@ CVehicle::MakeNonDraggedPedsLeaveVehicle(CPed *ped1, CPed *ped2, CPlayerPed *&pl
 	int numPeds3 = 0;
 	for(i = 0; i < numPeds; i++){
 		if(peds[i]->IsPlayer() && ped2->m_nPedType == PEDTYPE_COP &&
-		   ((CPlayerPed*)peds[i])->m_pWanted->m_nWantedLevel > 0 &&
+		   ((CPlayerPed*)peds[i])->m_pWanted->GetWantedLevel() > 0 &&
 		   ped2->m_pedInObjective == peds[i]){
 			player = (CPlayerPed*)peds[i];
 			cop = (CCopPed*)ped2;

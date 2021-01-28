@@ -1,4 +1,4 @@
-﻿#include "common.h"
+#include "common.h"
 #include "main.h"
 
 #include "General.h"
@@ -49,8 +49,7 @@
 #include "Object.h"
 #include "Automobile.h"
 #include "Bike.h"
-
-//--MIAMI: file done
+#include "Wanted.h"
 
 bool bAllCarCheat;
 
@@ -737,7 +736,7 @@ CAutomobile::ProcessControl(void)
 		float fwdSpeed = Abs(DotProduct(m_vecMoveSpeed, GetForward()));
 		CVector contactPoints[4];	// relative to model
 		CVector contactSpeeds[4];	// speed at contact points
-		CVector springDirections[4];	// normalized, in model space
+		CVector springDirections[4];	// normalized, in world space
 
 		for(i = 0; i < 4; i++){
 			// Set spring under certain circumstances
@@ -925,10 +924,10 @@ CAutomobile::ProcessControl(void)
 			CVector wheelFwd, wheelRight, tmp;
 
 			if(m_aWheelTimer[CARWHEEL_FRONT_LEFT] > 0.0f){
-				if(mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier))
-					fThrust = 0.0f;
-				else
+				if(mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier))
 					fThrust = acceleration;
+				else
+					fThrust = 0.0f;
 
 				wheelFwd = GetForward();
 				wheelFwd -= DotProduct(wheelFwd, m_aWheelColPoints[CARWHEEL_FRONT_LEFT].normal)*m_aWheelColPoints[CARWHEEL_FRONT_LEFT].normal;
@@ -968,10 +967,10 @@ CAutomobile::ProcessControl(void)
 			}
 
 			if(m_aWheelTimer[CARWHEEL_FRONT_RIGHT] > 0.0f){
-				if(mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier))
-					fThrust = 0.0f;
-				else
+				if(mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier))
 					fThrust = acceleration;
+				else
+					fThrust = 0.0f;
 
 				wheelFwd = GetForward();
 				wheelFwd -= DotProduct(wheelFwd, m_aWheelColPoints[CARWHEEL_FRONT_RIGHT].normal)*m_aWheelColPoints[CARWHEEL_FRONT_RIGHT].normal;
@@ -1015,9 +1014,7 @@ CAutomobile::ProcessControl(void)
 
 		if(!IsRealHeli()){
 			if(m_aWheelTimer[CARWHEEL_FRONT_LEFT] <= 0.0f){
-				if(mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier) || acceleration == 0.0f)
-					m_aWheelSpeed[CARWHEEL_FRONT_LEFT] *= 0.95f;
-				else{
+				if(mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier) && acceleration != 0.0f){
 					if(acceleration > 0.0f){
 						if(m_aWheelSpeed[CARWHEEL_FRONT_LEFT] < 2.0f)
 							m_aWheelSpeed[CARWHEEL_FRONT_LEFT] -= 0.2f;
@@ -1025,13 +1022,13 @@ CAutomobile::ProcessControl(void)
 						if(m_aWheelSpeed[CARWHEEL_FRONT_LEFT] > -2.0f)
 							m_aWheelSpeed[CARWHEEL_FRONT_LEFT] += 0.1f;
 					}
+				}else{
+					m_aWheelSpeed[CARWHEEL_FRONT_LEFT] *= 0.95f;
 				}
 				m_aWheelRotation[CARWHEEL_FRONT_LEFT] += m_aWheelSpeed[CARWHEEL_FRONT_LEFT];
 			}
 			if(m_aWheelTimer[CARWHEEL_FRONT_RIGHT] <= 0.0f){
-				if(mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier) || acceleration == 0.0f)
-					m_aWheelSpeed[CARWHEEL_FRONT_RIGHT] *= 0.95f;
-				else{
+				if(mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier) && acceleration != 0.0f){
 					if(acceleration > 0.0f){
 						if(m_aWheelSpeed[CARWHEEL_FRONT_RIGHT] < 2.0f)
 							m_aWheelSpeed[CARWHEEL_FRONT_RIGHT] -= 0.2f;
@@ -1039,6 +1036,8 @@ CAutomobile::ProcessControl(void)
 						if(m_aWheelSpeed[CARWHEEL_FRONT_RIGHT] > -2.0f)
 							m_aWheelSpeed[CARWHEEL_FRONT_RIGHT] += 0.1f;
 					}
+				}else{
+					m_aWheelSpeed[CARWHEEL_FRONT_RIGHT] *= 0.95f;
 				}
 				m_aWheelRotation[CARWHEEL_FRONT_RIGHT] += m_aWheelSpeed[CARWHEEL_FRONT_RIGHT];
 			}
@@ -1065,7 +1064,7 @@ CAutomobile::ProcessControl(void)
 					if(m_fTireTemperature > 2.0f)
 						m_fTireTemperature = 2.0f;
 				}
-			}else if(m_doingBurnout && !mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier)){
+			}else if(m_doingBurnout && mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier)){
 				rearBrake = 0.0f;
 				rearTraction = 0.0f;
 				// BUG: missing timestep
@@ -1075,10 +1074,10 @@ CAutomobile::ProcessControl(void)
 			}
 
 			if(m_aWheelTimer[CARWHEEL_REAR_LEFT] > 0.0f){
-				if(mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier))
-					fThrust = 0.0f;
-				else
+				if(mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier))
 					fThrust = acceleration;
+				else
+					fThrust = 0.0f;
 
 				wheelFwd -= DotProduct(wheelFwd, m_aWheelColPoints[CARWHEEL_REAR_LEFT].normal)*m_aWheelColPoints[CARWHEEL_REAR_LEFT].normal;
 				wheelFwd.Normalise();
@@ -1120,10 +1119,10 @@ CAutomobile::ProcessControl(void)
 #endif
 
 			if(m_aWheelTimer[CARWHEEL_REAR_RIGHT] > 0.0f){
-				if(mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier))
-					fThrust = 0.0f;
-				else
+				if(mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier))
 					fThrust = acceleration;
+				else
+					fThrust = 0.0f;
 
 				wheelFwd -= DotProduct(wheelFwd, m_aWheelColPoints[CARWHEEL_REAR_RIGHT].normal)*m_aWheelColPoints[CARWHEEL_REAR_RIGHT].normal;
 				wheelFwd.Normalise();
@@ -1159,7 +1158,7 @@ CAutomobile::ProcessControl(void)
 			}
 		}
 
-		if(m_doingBurnout && !mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier) &&
+		if(m_doingBurnout && mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier) &&
 	           (m_aWheelState[CARWHEEL_REAR_LEFT] == WHEEL_STATE_SPINNING || m_aWheelState[CARWHEEL_REAR_RIGHT] == WHEEL_STATE_SPINNING)){
 			m_fTireTemperature += 0.001f*CTimer::GetTimeStep();
 			if(m_fTireTemperature > 3.0f)
@@ -1174,9 +1173,7 @@ CAutomobile::ProcessControl(void)
 			if(m_aWheelTimer[CARWHEEL_REAR_LEFT] <= 0.0f){
 				if(bIsHandbrakeOn)
 					m_aWheelSpeed[CARWHEEL_REAR_LEFT] = 0.0f;
-				else if(mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier) || acceleration == 0.0f)
-					m_aWheelSpeed[CARWHEEL_REAR_LEFT] *= 0.95f;
-				else{
+				else if(mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier) && acceleration != 0.0f){
 					if(acceleration > 0.0f){
 						if(m_aWheelSpeed[CARWHEEL_REAR_LEFT] < 2.0f)
 							m_aWheelSpeed[CARWHEEL_REAR_LEFT] -= 0.2f;
@@ -1184,15 +1181,15 @@ CAutomobile::ProcessControl(void)
 						if(m_aWheelSpeed[CARWHEEL_REAR_LEFT] > -2.0f)
 							m_aWheelSpeed[CARWHEEL_REAR_LEFT] += 0.1f;
 					}
+				}else{
+					m_aWheelSpeed[CARWHEEL_REAR_LEFT] *= 0.95f;
 				}
 				m_aWheelRotation[CARWHEEL_REAR_LEFT] += m_aWheelSpeed[CARWHEEL_REAR_LEFT];
 			}
 			if(m_aWheelTimer[CARWHEEL_REAR_RIGHT] <= 0.0f){
 				if(bIsHandbrakeOn)
 					m_aWheelSpeed[CARWHEEL_REAR_RIGHT] = 0.0f;
-				else if(mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier) || acceleration == 0.0f)
-					m_aWheelSpeed[CARWHEEL_REAR_RIGHT] *= 0.95f;
-				else{
+				else if(mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier) && acceleration != 0.0f){
 					if(acceleration > 0.0f){
 						if(m_aWheelSpeed[CARWHEEL_REAR_RIGHT] < 2.0f)
 							m_aWheelSpeed[CARWHEEL_REAR_RIGHT] -= 0.2f;
@@ -1200,6 +1197,8 @@ CAutomobile::ProcessControl(void)
 						if(m_aWheelSpeed[CARWHEEL_REAR_RIGHT] > -2.0f)
 							m_aWheelSpeed[CARWHEEL_REAR_RIGHT] += 0.1f;
 					}
+				}else{
+					m_aWheelSpeed[CARWHEEL_REAR_RIGHT] *= 0.95f;
 				}
 				m_aWheelRotation[CARWHEEL_REAR_RIGHT] += m_aWheelSpeed[CARWHEEL_REAR_RIGHT];
 			}
@@ -1215,10 +1214,10 @@ CAutomobile::ProcessControl(void)
 			CVector wheelFwd, wheelRight, tmp;
 
 			if(m_aWheelTimer[CARWHEEL_FRONT_LEFT] > 0.0f){
-				if(mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier))
-					fThrust = 0.0f;
-				else
+				if(mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier))
 					fThrust = acceleration;
+				else
+					fThrust = 0.0f;
 
 				wheelFwd = GetForward();
 				wheelFwd -= DotProduct(wheelFwd, m_aWheelColPoints[CARWHEEL_FRONT_LEFT].normal)*m_aWheelColPoints[CARWHEEL_FRONT_LEFT].normal;
@@ -1258,10 +1257,10 @@ CAutomobile::ProcessControl(void)
 			}
 
 			if(m_aWheelTimer[CARWHEEL_FRONT_RIGHT] > 0.0f){
-				if(mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier))
-					fThrust = 0.0f;
-				else
+				if(mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier))
 					fThrust = acceleration;
+				else
+					fThrust = 0.0f;
 
 				wheelFwd = GetForward();
 				wheelFwd -= DotProduct(wheelFwd, m_aWheelColPoints[CARWHEEL_FRONT_RIGHT].normal)*m_aWheelColPoints[CARWHEEL_FRONT_RIGHT].normal;
@@ -1305,9 +1304,7 @@ CAutomobile::ProcessControl(void)
 
 		if (!IsRealHeli()) {
 			if(m_aWheelTimer[CARWHEEL_FRONT_LEFT] <= 0.0f){
-				if(mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier) || acceleration == 0.0f)
-					m_aWheelSpeed[CARWHEEL_FRONT_LEFT] *= 0.95f;
-				else{
+				if(mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier) && acceleration != 0.0f){
 					if(acceleration > 0.0f){
 						if(m_aWheelSpeed[CARWHEEL_FRONT_LEFT] < 2.0f)
 							m_aWheelSpeed[CARWHEEL_FRONT_LEFT] -= 0.2f;
@@ -1315,13 +1312,13 @@ CAutomobile::ProcessControl(void)
 						if(m_aWheelSpeed[CARWHEEL_FRONT_LEFT] > -2.0f)
 							m_aWheelSpeed[CARWHEEL_FRONT_LEFT] += 0.1f;
 					}
+				}else{
+					m_aWheelSpeed[CARWHEEL_FRONT_LEFT] *= 0.95f;
 				}
 				m_aWheelRotation[CARWHEEL_FRONT_LEFT] += m_aWheelSpeed[CARWHEEL_FRONT_LEFT];
 			}
 			if(m_aWheelTimer[CARWHEEL_FRONT_RIGHT] <= 0.0f){
-				if(mod_HandlingManager.HasRearWheelDrive(pHandling->nIdentifier) || acceleration == 0.0f)
-					m_aWheelSpeed[CARWHEEL_FRONT_RIGHT] *= 0.95f;
-				else{
+				if(mod_HandlingManager.HasFrontWheelDrive(pHandling->nIdentifier) && acceleration != 0.0f){
 					if(acceleration > 0.0f){
 						if(m_aWheelSpeed[CARWHEEL_FRONT_RIGHT] < 2.0f)
 							m_aWheelSpeed[CARWHEEL_FRONT_RIGHT] -= 0.2f;
@@ -1329,6 +1326,8 @@ CAutomobile::ProcessControl(void)
 						if(m_aWheelSpeed[CARWHEEL_FRONT_RIGHT] > -2.0f)
 							m_aWheelSpeed[CARWHEEL_FRONT_RIGHT] += 0.1f;
 					}
+				}else{
+					m_aWheelSpeed[CARWHEEL_FRONT_RIGHT] *= 0.95f;
 				}
 				m_aWheelRotation[CARWHEEL_FRONT_RIGHT] += m_aWheelSpeed[CARWHEEL_FRONT_RIGHT];
 			}
@@ -1424,7 +1423,12 @@ CAutomobile::ProcessControl(void)
 					if (GetModelIndex() == MI_RCRAIDER || GetModelIndex() == MI_RCGOBLIN)
 						FlyingControl(FLIGHT_MODEL_RCHELI);
 					else if (m_nWheelsOnGround < 4 && !(GetModelIndex() == MI_SEASPAR && bTouchingWater) ||
-						CPad::GetPad(0)->GetAccelerate() != 0 || CPad::GetPad(0)->GetCarGunUpDown() > 1.0f ||
+						CPad::GetPad(0)->GetAccelerate() != 0 ||
+#ifndef FREE_CAM
+						CPad::GetPad(0)->GetCarGunUpDown() > 1.0f ||
+#else
+						((!CCamera::bFreeCam || (CCamera::bFreeCam && !CPad::IsAffectedByController)) && CPad::GetPad(0)->GetCarGunUpDown() > 1.0f) ||
+#endif
 						Abs(m_vecMoveSpeed.x) > 0.02f ||
 						Abs(m_vecMoveSpeed.y) > 0.02f ||
 						Abs(m_vecMoveSpeed.z) > 0.02f)
@@ -5125,7 +5129,6 @@ CAutomobile::HasCarStoppedBecauseOfLight(void)
 	return false;
 }
 
-// --MIAMI: Done
 void
 CPed::DeadPedMakesTyresBloody(void)
 {
@@ -5149,7 +5152,6 @@ CPed::DeadPedMakesTyresBloody(void)
 	}
 }
 
-// --MIAMI: Done
 void
 CPed::MakeTyresMuddySectorList(CPtrList &list)
 {

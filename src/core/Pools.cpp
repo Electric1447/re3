@@ -15,8 +15,6 @@
 #include "World.h"
 #include "MemoryHeap.h"
 
-//--MIAMI: file done
-
 CCPtrNodePool *CPools::ms_pPtrNodePool;
 CEntryInfoNodePool *CPools::ms_pEntryInfoNodePool;
 CPedPool *CPools::ms_pPedPool;
@@ -111,7 +109,7 @@ CPools::CheckPoolsEmpty()
 void
 CPools::MakeSureSlotInObjectPoolIsEmpty(int32 slot)
 {
-	if (ms_pObjectPool->IsFreeSlot(slot)) return;
+	if (ms_pObjectPool->GetIsFree(slot)) return;
 
 	CObject *object = ms_pObjectPool->GetSlot(slot);
 	if (object->ObjectCreatedBy == TEMP_OBJECT) {

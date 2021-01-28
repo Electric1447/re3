@@ -8,8 +8,6 @@
 #include "Lines.h"	// for debug
 #include "PathFind.h"
 
-//--MIAMI: file done except mobile unused function
-
 bool gbShowPedPaths;
 bool gbShowCarPaths;
 bool gbShowCarPathsLinks;
@@ -340,17 +338,17 @@ CPathFind::StoreNodeInfoCar(int16 id, int16 node, int8 type, int8 next, int16 x,
 	InfoForTileCars[i].x = x/16.0f;
 	InfoForTileCars[i].y = y/16.0f;
 	InfoForTileCars[i].z = z/16.0f;
-	InfoForTilePeds[i].width = 8.0f*Min(width, 15.0f);
+	InfoForTileCars[i].width = 8.0f*Min(width, 15.0f);
 	InfoForTileCars[i].numLeftLanes = numLeft;
 	InfoForTileCars[i].numRightLanes = numRight;
-	InfoForTilePeds[i].crossing = false;
-	InfoForTilePeds[i].speedLimit = 0;
-	InfoForTilePeds[i].roadBlock = false;
-	InfoForTilePeds[i].disabled = false;
-	InfoForTilePeds[i].waterPath = false;
-	InfoForTilePeds[i].onlySmallBoats = false;
-	InfoForTilePeds[i].betweenLevels = false;
-	InfoForTilePeds[i].spawnRate = Min(spawnRate, 15);
+	InfoForTileCars[i].crossing = false;
+	InfoForTileCars[i].speedLimit = 0;
+	InfoForTileCars[i].roadBlock = false;
+	InfoForTileCars[i].disabled = false;
+	InfoForTileCars[i].waterPath = false;
+	InfoForTileCars[i].onlySmallBoats = false;
+	InfoForTileCars[i].betweenLevels = false;
+	InfoForTileCars[i].spawnRate = Min(spawnRate, 15);
 
 	if(node == 11)
 		InfoForTileCars[id*12].SwapConnectionsToBeRightWayRound();
@@ -1820,6 +1818,12 @@ CPathFind::Load(uint8 *buf, uint32 size)
 			m_pathNodes[i].bBetweenLevels = true;
 		else
 			m_pathNodes[i].bBetweenLevels = false;
+
+#ifdef SECUROM
+	// if pirated game
+	for(i = 0; i < m_numPathNodes; i++)
+		m_pathNodes[i].bDisabled = true;
+#endif
 }
 
 void

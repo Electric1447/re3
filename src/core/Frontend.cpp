@@ -1,10 +1,6 @@
-#if defined RW_D3D9 || defined RWLIBS
-#define DIRECTINPUT_VERSION 0x0800
-#include <dinput.h>
-#endif
-
 #define FORCE_PC_SCALING
 #define WITHWINDOWS
+#define WITHDINPUT
 #include "common.h"
 #ifndef PS2_MENU
 #include "crossplatform.h"
@@ -39,8 +35,6 @@
 #include "FileLoader.h"
 #include "User.h"
 #include "sampman.h"
-
-// --MIAMI: file done
 
 // Similar story to Hud.cpp:
 // Game has colors inlined in code.
@@ -573,13 +567,21 @@ CMenuManager::Initialise(void)
 	DMAudio.Service();
 	DMAudio.SetMusicMasterVolume(m_PrefsMusicVolume);
 	DMAudio.SetEffectsMasterVolume(m_PrefsSfxVolume);
+#ifdef FIX_BUGS
+	static bool firstTime = true;
+	if (firstTime) {
+		DMAudio.SetRadioInCar(m_PrefsRadioStation);
+		firstTime = false;
+	} else
+#endif
 	m_PrefsRadioStation = DMAudio.GetRadioInCar();
+
 	DMAudio.SetMP3BoostVolume(m_PrefsMP3BoostVolume);
 	if (DMAudio.IsMP3RadioChannelAvailable()) {
 		if (m_PrefsRadioStation < WILDSTYLE || m_PrefsRadioStation > USERTRACK)
-			m_PrefsRadioStation = CGeneral::GetRandomNumber() % 10;
+			m_PrefsRadioStation = CGeneral::GetRandomNumber() % (USERTRACK + 1);
 	} else if (m_PrefsRadioStation < WILDSTYLE || m_PrefsRadioStation > WAVE)
-		m_PrefsRadioStation = CGeneral::GetRandomNumber() % 9;
+		m_PrefsRadioStation = CGeneral::GetRandomNumber() % (WAVE + 1);
 
 	CFileMgr::SetDir("");
 	//CFileMgr::SetDir("");
@@ -663,7 +665,11 @@ CMenuManager::CheckCodesForControls(int typeOfControl)
 		m_bWaitingForNewKeyBind = false;
 		m_KeyPressedCode = -1;
 		m_bStartWaitingForKeyBind = false;
+#ifdef LOAD_INI_SETTINGS
+		SaveINIControllerSettings();
+#else
 		SaveSettings();
+#endif
 	}
 }
 
@@ -984,7 +990,9 @@ CMenuManager::DrawStandardMenus(bool activeScreen)
 	}
 
 	wchar unicodeTemp[64];
+#ifdef ASPECT_RATIO_SCALE
 	char asciiTemp[32];
+#endif
 
 	bool weHaveLabel = aScreens[m_nCurrScreen].m_aEntries[0].m_Action == MENUACTION_LABEL;
 	uint8 section = 0; // 0: highlight trapezoid  1: texts
@@ -3042,6 +3050,16 @@ CMenuManager::LoadSettings()
 	CFileMgr::CloseFile(fileHandle);
 	CFileMgr::SetDir("");
 
+#ifdef LOAD_INI_SETTINGS
+	if (LoadINISettings()) {
+		LoadINIControllerSettings();
+	} else {
+		// no re3.ini, create it
+		SaveINISettings();
+		SaveINIControllerSettings();
+	}
+#endif
+
 #ifdef FIX_BUGS
 	TheCamera.m_fMouseAccelVertical = TheCamera.m_fMouseAccelHorzntl + 0.0005f;
 #endif
@@ -3087,15 +3105,12 @@ CMenuManager::LoadSettings()
 		strcpy(m_PrefsSkinFile, DEFAULT_SKIN_NAME);
 		strcpy(m_aSkinName, DEFAULT_SKIN_NAME);
 	}
-	
-#ifdef LOAD_INI_SETTINGS
-	LoadINISettings(); // needs frontend options to be loaded
-#endif
 }
 
 void
 CMenuManager::SaveSettings()
 {
+#ifndef LOAD_INI_SETTINGS
 	static char RubbishString[48] = "stuffmorestuffevenmorestuff                 etc";
 	static int SomeVersion = 3;
 
@@ -3154,7 +3169,8 @@ CMenuManager::SaveSettings()
 	CFileMgr::CloseFile(fileHandle);
 	CFileMgr::SetDir("");
 	
-#ifdef LOAD_INI_SETTINGS
+#else
+	m_lastWorking3DAudioProvider = m_nPrefsAudio3DProviderIndex;
 	SaveINISettings();
 #endif
 }
@@ -3241,7 +3257,9 @@ CMenuManager::PrintBriefs()
 void
 CMenuManager::PrintStats()
 {
-	static uint8 pirateCheck = 0;
+#ifdef SECUROM
+	static uint8 statsPirateCheck = 0;
+#endif
 	static float scrollY = 0;
 
 	int rowNum = CStats::ConstructStatLine(99999);
@@ -3254,11 +3272,13 @@ CMenuManager::PrintStats()
 	CFont::SetPropOn();
 	CFont::SetDropShadowPosition(0);
 
-	if (pirateCheck == 0)
+#ifdef SECUROM
+	if (statsPirateCheck == 0)
 		// if not pirated game
-		pirateCheck = 46;
+		// statsPirateCheck = 46;
 		// else
-		// pirateCheck = 45;
+		statsPirateCheck = 45;
+#endif
 
 	if (m_PrefsLanguage == LANGUAGE_AMERICAN)
 		CFont::SetScale(MENU_X(0.43f), MENU_Y(0.75f));
@@ -3278,8 +3298,10 @@ CMenuManager::PrintStats()
 		lastCheck = CTimer::GetTimeInMillisecondsPauseMode();
 	}
 
-	if (pirateCheck == 45)
+#ifdef SECUROM
+	if (statsPirateCheck == 45)
 		return;
+#endif
 
 	float nextYChange, y, alpha;
 
@@ -4428,19 +4450,19 @@ CMenuManager::ProcessUserInput(uint8 goDown, uint8 goUp, uint8 optionSelected, u
 			MouseButtonJustClicked = false;
 
 			if (CPad::GetPad(0)->GetLeftMouseJustDown())
-				MouseButtonJustClicked = 1;
+				MouseButtonJustClicked = rsMOUSELEFTBUTTON;
 			else if (CPad::GetPad(0)->GetRightMouseJustUp())
-				MouseButtonJustClicked = 3;
+				MouseButtonJustClicked = rsMOUSERIGHTBUTTON;
 			else if (CPad::GetPad(0)->GetMiddleMouseJustUp())
-				MouseButtonJustClicked = 2;
+				MouseButtonJustClicked = rsMOUSMIDDLEBUTTON;
 			else if (CPad::GetPad(0)->GetMouseWheelUpJustUp())
-				MouseButtonJustClicked = 4;
+				MouseButtonJustClicked = rsMOUSEWHEELUPBUTTON;
 			else if (CPad::GetPad(0)->GetMouseWheelDownJustUp())
-				MouseButtonJustClicked = 5;
+				MouseButtonJustClicked = rsMOUSEWHEELDOWNBUTTON;
 			else if (CPad::GetPad(0)->GetMouseX1JustUp())
-				MouseButtonJustClicked = 6;
+				MouseButtonJustClicked = rsMOUSEX1BUTTON;
 			else if (CPad::GetPad(0)->GetMouseX2JustUp())
-				MouseButtonJustClicked = 7;
+				MouseButtonJustClicked = rsMOUSEX2BUTTON;
 
 			JoyButtonJustClicked = ControlsManager.GetJoyButtonJustDown();
 
@@ -4800,6 +4822,9 @@ CMenuManager::ProcessUserInput(uint8 goDown, uint8 goUp, uint8 optionSelected, u
 					TheCamera.m_bUseMouse3rdPerson = false;
 #endif
 					SaveSettings();
+#ifdef LOAD_INI_SETTINGS
+					SaveINIControllerSettings();
+#endif
 				}
 				SetHelperText(2);
 				break;
@@ -4830,7 +4855,8 @@ CMenuManager::ProcessUserInput(uint8 goDown, uint8 goUp, uint8 optionSelected, u
 
 					*option.m_CFO->value = option.m_CFOSelect->lastSavedValue = option.m_CFOSelect->displayedValue;
 
-					if (option.m_CFOSelect->save)
+					// Now everything is saved in .ini, and LOAD_INI_SETTINGS is fundamental for CFO
+					// if (option.m_CFOSelect->save)
 						SaveSettings();
 
 					if (option.m_CFOSelect->displayedValue != oldValue && option.m_CFOSelect->changeFunc)
@@ -4986,7 +5012,8 @@ CMenuManager::ProcessUserInput(uint8 goDown, uint8 goUp, uint8 optionSelected, u
 
 						*option.m_CFO->value = option.m_CFOSelect->lastSavedValue = option.m_CFOSelect->displayedValue;
 
-						if (option.m_CFOSelect->save)
+						// Now everything is saved in .ini, and LOAD_INI_SETTINGS is fundamental for CFO
+						// if (option.m_CFOSelect->save)
 							SaveSettings();
 
 						if (option.m_CFOSelect->displayedValue != oldValue && option.m_CFOSelect->changeFunc)
@@ -5428,6 +5455,9 @@ CMenuManager::SwitchMenuOnAndOff()
 				ThingsToDoBeforeLeavingPage();
 #endif
 				SaveSettings();
+#ifdef LOAD_INI_SETTINGS
+				SaveINIControllerSettings();
+#endif
 				pControlEdit = nil;
 				pEditString = nil;
 				DisplayComboButtonErrMsg = false;

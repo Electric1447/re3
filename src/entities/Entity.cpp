@@ -26,8 +26,6 @@
 #include "Dummy.h"
 #include "WindModifiers.h"
 
-//--MIAMI: file done
-
 int gBuildings;
 
 CEntity::CEntity(void)
@@ -447,7 +445,11 @@ CEntity::GetIsOnScreen(void)
 bool
 CEntity::GetIsOnScreenComplex(void)
 {
-	RwV3d boundBox[8];
+#ifdef GTA_PS2
+	CVuVector boundBox[8];
+#else
+	CVector boundBox[8];
+#endif
 
 	if(TheCamera.IsPointVisible(GetBoundCentre(), &TheCamera.GetCameraMatrix()))
 		return true;
@@ -683,7 +685,7 @@ float BannerWindTabel[] = {
 	0.28f, 0.28f, 0.22f, 0.1f, 0.0f, -0.1f, -0.17f, -0.12f
 };
 
-//--MIAMI: unused
+// unused
 void
 CEntity::ModifyMatrixForBannerInWind(void)
 {

@@ -39,6 +39,7 @@
 #include "World.h"
 #include "Zones.h"
 #include "Bike.h"
+#include "Wanted.h"
 
 #ifdef FIX_BUGS
 static bool IsSlideObjectUsedWrongByScript(const CVector& posTarget, const CVector& slideBy)
@@ -1495,7 +1496,7 @@ int8 CRunningScript::ProcessCommands900To999(int32 command)
 		CVehicle* pVehicle = CPools::GetVehiclePool()->GetAt(ScriptParams[0]);
 		script_assert(pVehicle);
 		const CVector& pos = pVehicle->GetPosition();
-		float heading = CGeneral::GetATanOfXY(pos.y - *(float*)&ScriptParams[2], pos.x - *(float*)&ScriptParams[1]) + HALFPI;
+		float heading = CGeneral::GetATanOfXY(pos.x - *(float*)&ScriptParams[1], pos.y - *(float*)&ScriptParams[2]) + HALFPI;
 		if (heading > TWOPI)
 			heading -= TWOPI;
 		pVehicle->SetHeading(heading);

@@ -14,8 +14,6 @@
 #include "custompipes.h"
 #include "MemoryHeap.h"
 
-//--MIAMI: file done
-
 CLinkList<CVisibilityPlugins::AlphaObjectInfo> CVisibilityPlugins::m_alphaList;
 CLinkList<CVisibilityPlugins::AlphaObjectInfo> CVisibilityPlugins::m_alphaBoatAtomicList;
 CLinkList<CVisibilityPlugins::AlphaObjectInfo> CVisibilityPlugins::m_alphaEntityList;
@@ -456,7 +454,7 @@ CVisibilityPlugins::RenderVehicleHiDetailAlphaCB_BigVehicle(RpAtomic *atomic)
 RpAtomic*
 CVisibilityPlugins::RenderVehicleHiDetailCB_Boat(RpAtomic *atomic)
 {
-	if(DistToCameraSq < ms_bigVehicleLod1Dist)
+	if(DistToCameraSq < ms_vehicleLod0Dist)
 		RENDERCALLBACK(atomic);
 	return atomic;
 }
@@ -470,6 +468,23 @@ CVisibilityPlugins::RenderVehicleHiDetailAlphaCB_Boat(RpAtomic *atomic)
 				RENDERCALLBACK(atomic);
 		}else
 			RENDERCALLBACK(atomic);
+	}
+	return atomic;
+}
+
+RpAtomic*
+CVisibilityPlugins::RenderVehicleLoDetailCB_Boat(RpAtomic *atomic)
+{
+	RpClump *clump;
+	int32 alpha;
+
+	clump = RpAtomicGetClump(atomic);
+	if(DistToCameraSq >= ms_vehicleLod0Dist){
+		alpha = GetClumpAlpha(clump);
+		if(alpha == 255)
+			RENDERCALLBACK(atomic);
+		else
+			RenderAlphaAtomic(atomic, alpha);
 	}
 	return atomic;
 }

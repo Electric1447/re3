@@ -65,7 +65,7 @@ end
 
 workspace "reVC"
 	language "C++"
-	configurations { "Debug", "Release" }
+	configurations { "Debug", "Release", "Vanilla" }
 	startproject "reVC"
 	location "build"
 	symbols "Full"
@@ -113,12 +113,15 @@ workspace "reVC"
 	filter "configurations:Debug"
 		defines { "DEBUG" }
 		
-	filter "configurations:Release"
+	filter "configurations:not Debug"
 		defines { "NDEBUG" }
 		optimize "Speed"
 		if(_OPTIONS["lto"]) then
 			flags { "LinkTimeOptimization" }
 		end
+
+	filter "configurations:Vanilla"
+		defines { "VANILLA_DEFINES" }
 
 	filter { "platforms:win*" }
 		system "windows"
@@ -146,7 +149,6 @@ workspace "reVC"
 
 	filter { "platforms:macosx-amd64-*" }
 		buildoptions { "-target", "x86_64-apple-macos10.12", "-std=gnu++14" }
-
 
 	filter { "platforms:*librw_d3d9*" }
 		defines { "RW_D3D9" }
@@ -232,7 +234,6 @@ project "reVC"
 	kind "WindowedApp"
 	targetname "reVC"
 	targetdir "bin/%{cfg.platform}/%{cfg.buildcfg}"
-	defines { "MIAMI" }
 
 	files { addSrcFiles("src") }
 	files { addSrcFiles("src/animation") }

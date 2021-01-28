@@ -53,8 +53,6 @@
 #include "Fluff.h"
 #include "WaterCreatures.h"
 
-//--MIAMI: file done
-
 uint8 CReplay::Mode;
 CAddressInReplayBuffer CReplay::Record;
 CAddressInReplayBuffer CReplay::Playback;
@@ -336,7 +334,7 @@ void CReplay::RecordThisFrame(void)
 		GoToNextBlock();
 	tGeneralPacket* general = (tGeneralPacket*)&Record.m_pBase[Record.m_nOffset];
 	general->type = REPLAYPACKET_GENERAL;
-	general->camera_pos.CopyOnlyMatrix(&TheCamera.GetMatrix());
+	general->camera_pos.CopyOnlyMatrix(TheCamera.GetMatrix());
 	general->player_pos = FindPlayerCoors();
 	general->in_rcvehicle = CWorld::Players[CWorld::PlayerInFocus].m_pRemoteVehicle ? true : false;
 	Record.m_nOffset += sizeof(*general);
@@ -523,7 +521,7 @@ void CReplay::StoreDetailedPedAnimation(CPed *ped, CStoredDetailedAnimationState
 				state->aFunctionCallbackID[i] = 0;
 			}
 		}else{
-			state->aAnimId[i] = NUM_ANIMS;
+			state->aAnimId[i] = NUM_STD_ANIMS;
 			state->aCurTime[i] = 0;
 			state->aSpeed[i] = 85;
 			state->aFunctionCallbackID[i] = 0;
@@ -550,7 +548,7 @@ void CReplay::StoreDetailedPedAnimation(CPed *ped, CStoredDetailedAnimationState
 			}
 		}
 		else {
-			state->aAnimId2[i] = NUM_ANIMS;
+			state->aAnimId2[i] = NUM_STD_ANIMS;
 			state->aCurTime2[i] = 0;
 			state->aSpeed2[i] = 85;
 			state->aFunctionCallbackID2[i] = 0;
@@ -661,7 +659,7 @@ void CReplay::RetrieveDetailedPedAnimation(CPed *ped, CStoredDetailedAnimationSt
 	for (int i = 0; ((assoc = RpAnimBlendClumpGetMainPartialAssociation_N(ped->GetClump(), i))); i++)
 		assoc->SetBlend(0.0f, -1.0f);
 	for (int i = 0; i < NUM_MAIN_ANIMS_IN_REPLAY; i++) {
-		if (state->aAnimId[i] == NUM_ANIMS)
+		if (state->aAnimId[i] == NUM_STD_ANIMS)
 			continue;
 		CAnimBlendAssociation* anim = CAnimManager::AddAnimation(ped->GetClump(),
 			state->aAnimId[i] > 3 ? (AssocGroupId)state->aGroupId[i] : ped->m_animGroup,
@@ -679,7 +677,7 @@ void CReplay::RetrieveDetailedPedAnimation(CPed *ped, CStoredDetailedAnimationSt
 			anim->SetDeleteCallback(FindCBFunction(callback & 0x7F), ped);
 	}
 	for (int i = 0; i < NUM_PARTIAL_ANIMS_IN_REPLAY; i++) {
-		if (state->aAnimId2[i] == NUM_ANIMS)
+		if (state->aAnimId2[i] == NUM_STD_ANIMS)
 			continue;
 		CAnimBlendAssociation* anim = CAnimManager::AddAnimation(ped->GetClump(),
 			state->aAnimId2[i] > 3 ? (AssocGroupId)state->aGroupId2[i] : ped->m_animGroup,

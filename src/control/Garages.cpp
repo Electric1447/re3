@@ -25,8 +25,6 @@
 #include "World.h"
 #include "VarConsole.h"
 
-//--MIAMI: file done
-
 #define CRUSHER_GARAGE_X1 (1135.5f)
 #define CRUSHER_GARAGE_Y1 (57.0f)
 #define CRUSHER_GARAGE_Z1 (-1.0f)
@@ -108,7 +106,7 @@ const int32 gaCarsToCollectInCraigsGarages[TOTAL_COLLECTCARS_GARAGES][TOTAL_COLL
 	{ MI_VOODOO,   MI_CUBAN,    MI_CADDY,    MI_BAGGAGE,  MI_MRWHOOP, MI_PIZZABOY }
 };
 
-const int32 gaCarsToCollectIn60Seconds[] = { MI_CHEETAH, MI_TAXI, MI_ESPERANT, MI_SENTINEL, MI_IDAHO }; // what is this?
+const int32 gaCarsToCollectIn60Seconds[] = { MI_CHEETAH, MI_TAXI, MI_ESPERANT, MI_SENTINEL, MI_IDAHO };
 
 int32 CGarages::BankVansCollected;
 bool CGarages::BombsAreFree;
@@ -177,6 +175,10 @@ void CGarages::Update(void)
 	static uint32 GarageToBeTidied = 0;
 	if (CReplay::IsPlayingBack())
 		return;
+#ifdef SECUROM
+	extern uint8 gameProcessPirateCheck;
+	if (gameProcessPirateCheck == 2) return;
+#endif
 	bCamShouldBeOutisde = false;
 	TheCamera.pToGarageWeAreIn = nil;
 	TheCamera.pToGarageWeAreInForHackAvoidFirstPerson = nil;
@@ -448,7 +450,7 @@ void CGarage::Update()
 				m_eGarageState = GS_OPENING;
 				DMAudio.PlayFrontEndSound(SOUND_GARAGE_OPENING, 1);
 				bool bTakeMoney = false;
-				if (FindPlayerPed()->m_pWanted->m_nWantedLevel != 0) {
+				if (FindPlayerPed()->m_pWanted->GetWantedLevel() != 0) {
 					bTakeMoney = true;
 					FindPlayerPed()->m_pWanted->Suspend();
 				}
@@ -1522,7 +1524,7 @@ void CGarage::RefreshDoorPointers(bool bCreate)
 	m_bRecreateDoorOnNextRefresh = false;
 	if (m_pDoor1) {
 		if (m_bDoor1IsDummy) {
-			if (CPools::GetDummyPool()->IsFreeSlot(CPools::GetDummyPool()->GetJustIndex_NoFreeAssert((CDummy*)m_pDoor1)))
+			if (CPools::GetDummyPool()->GetIsFree(CPools::GetDummyPool()->GetJustIndex_NoFreeAssert((CDummy*)m_pDoor1)))
 				bNeedToFindDoorEntities = true;
 			else {
 				if (m_bDoor1PoolIndex != (CPools::GetDummyPool()->GetIndex((CDummy*)m_pDoor1) & 0x7F))
@@ -1532,7 +1534,7 @@ void CGarage::RefreshDoorPointers(bool bCreate)
 			}
 		}
 		else {
-			if (CPools::GetObjectPool()->IsFreeSlot(CPools::GetObjectPool()->GetJustIndex_NoFreeAssert((CObject*)m_pDoor1)))
+			if (CPools::GetObjectPool()->GetIsFree(CPools::GetObjectPool()->GetJustIndex_NoFreeAssert((CObject*)m_pDoor1)))
 				bNeedToFindDoorEntities = true;
 			else {
 				if (m_bDoor1PoolIndex != (CPools::GetObjectPool()->GetIndex((CObject*)m_pDoor1) & 0x7F))
@@ -1544,7 +1546,7 @@ void CGarage::RefreshDoorPointers(bool bCreate)
 	}
 	if (m_pDoor2) {
 		if (m_bDoor2IsDummy) {
-			if (CPools::GetDummyPool()->IsFreeSlot(CPools::GetDummyPool()->GetJustIndex_NoFreeAssert((CDummy*)m_pDoor2)))
+			if (CPools::GetDummyPool()->GetIsFree(CPools::GetDummyPool()->GetJustIndex_NoFreeAssert((CDummy*)m_pDoor2)))
 				bNeedToFindDoorEntities = true;
 			else {
 				if (m_bDoor2PoolIndex != (CPools::GetDummyPool()->GetIndex((CDummy*)m_pDoor2) & 0x7F))
@@ -1554,7 +1556,7 @@ void CGarage::RefreshDoorPointers(bool bCreate)
 			}
 		}
 		else {
-			if (CPools::GetObjectPool()->IsFreeSlot(CPools::GetObjectPool()->GetJustIndex_NoFreeAssert((CObject*)m_pDoor2)))
+			if (CPools::GetObjectPool()->GetIsFree(CPools::GetObjectPool()->GetJustIndex_NoFreeAssert((CObject*)m_pDoor2)))
 				bNeedToFindDoorEntities = true;
 			else {
 				if (m_bDoor2PoolIndex != (CPools::GetObjectPool()->GetIndex((CObject*)m_pDoor2) & 0x7F))
@@ -2354,4 +2356,42 @@ CGarages::IsModelIndexADoor(uint32 id)
 		id == MI_GARAGEDOOR24 ||
 		id == MI_GARAGEDOOR25 ||
 		id == MI_GARAGEDOOR26;
+}
+
+void CGarages::StopCarFromBlowingUp(CAutomobile* pCar)
+{
+	pCar->m_fFireBlowUpTimer = 0.0f;
+	pCar->m_fHealth = Max(pCar->m_fHealth, 300.0f);
+	pCar->Damage.SetEngineStatus(Max(pCar->Damage.GetEngineStatus(), 275));
+}
+
+bool CGarage::Does60SecondsNeedThisCarAtAll(int mi)
+{
+	for (int i = 0; i < ARRAY_SIZE(gaCarsToCollectIn60Seconds); i++) {
+		if (gaCarsToCollectIn60Seconds[i] == mi)
+			return true;
+	}
+	return false;
+}
+
+bool CGarage::Does60SecondsNeedThisCar(int mi)
+{
+	for (int i = 0; i < ARRAY_SIZE(gaCarsToCollectIn60Seconds); i++) {
+		if (gaCarsToCollectIn60Seconds[i] == mi)
+			return m_bCollectedCarsState & BIT(i);
+	}
+	return false;
+}
+
+void CGarage::MarkThisCarAsCollectedFor60Seconds(int mi)
+{
+	for (int i = 0; i < ARRAY_SIZE(gaCarsToCollectIn60Seconds); i++) {
+		if (gaCarsToCollectIn60Seconds[i] == mi)
+			m_bCollectedCarsState |= BIT(i);
+	}
+}
+
+bool CGarage::IsPlayerEntirelyInsideGarage()
+{
+	return IsEntityEntirelyInside3D(FindPlayerVehicle() ? (CEntity*)FindPlayerVehicle() : (CEntity*)FindPlayerPed(), 0.0f);
 }

@@ -1,3 +1,6 @@
+#if (!defined(GTA_PS2_STUFF) && defined(RWLIBS)) || defined(__MWERKS__)
+#define WITHD3D
+#endif
 #include "config.h"
 #include "common.h"
 
@@ -16,8 +19,6 @@
 #include "Streaming.h"
 #include "SpecialFX.h"
 #include "Font.h"
-
-// --MIAMI: file done
 
 float CRadar::m_radarRange;
 sRadarTrace CRadar::ms_RadarTrace[NUMRADARBLIPS];
@@ -334,10 +335,10 @@ void CRadar::ClearBlipForEntity(eBlipType type, int32 id)
 int CRadar::ClipRadarPoly(CVector2D *poly, const CVector2D *rect)
 {
 	CVector2D corners[4] = {
-		{  1.0f, -1.0f },	// top right
-		{  1.0f,  1.0f },	// bottom right
-		{ -1.0f,  1.0f },	// bottom left
-		{ -1.0f, -1.0f },	// top left
+		CVector2D(  1.0f, -1.0f ),	// top right
+		CVector2D(  1.0f,  1.0f ),	// bottom right
+		CVector2D( -1.0f,  1.0f ),	// bottom left
+		CVector2D( -1.0f, -1.0f ),	// top left
 	};
 	CVector2D tmp;
 	int i, j, n;
@@ -476,6 +477,10 @@ void CRadar::Draw3dMarkers()
 void CRadar::DrawBlips()
 {
 	if (!TheCamera.m_WideScreenOn && CHud::m_Wants_To_Draw_Hud) {
+#ifdef SECUROM
+		extern uint8 roadBlocksPirateCheck;
+		if (roadBlocksPirateCheck == 2) return;
+#endif
 		RwRenderStateSet(rwRENDERSTATEZWRITEENABLE, (void*)FALSE);
 		RwRenderStateSet(rwRENDERSTATEZTESTENABLE, (void*)FALSE);
 		RwRenderStateSet(rwRENDERSTATEVERTEXALPHAENABLE, (void*)TRUE);
@@ -675,7 +680,7 @@ void CRadar::DrawRadarMask()
 		CVector2D(-1.0, -1.0f)
 	};
 
-	RwRenderStateSet(rwRENDERSTATETEXTURERASTER, (void*)FALSE);
+	RwRenderStateSet(rwRENDERSTATETEXTURERASTER, (void*)nil);
 	RwRenderStateSet(rwRENDERSTATEFOGENABLE, (void*)FALSE);
 	RwRenderStateSet(rwRENDERSTATETEXTUREFILTER, (void*)rwFILTERLINEAR);
 	RwRenderStateSet(rwRENDERSTATESHADEMODE, (void*)rwSHADEMODEFLAT);

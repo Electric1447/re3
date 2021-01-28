@@ -1,5 +1,8 @@
 #pragma once
 
+// disables (most) stuff that wasn't in original gta-vc.exe - check section at the bottom of this file
+//#define VANILLA_DEFINES
+
 enum Config {
 	NUMPLAYERS = 1,
 
@@ -263,6 +266,7 @@ enum Config {
 #define IMPROVED_VIDEOMODE	// save and load videomode parameters instead of a magic number
 //#define DISABLE_LOADING_SCREEN // disable the loading screen which vastly improves the loading time
 #define DISABLE_VSYNC_ON_TEXTURE_CONVERSION // make texture conversion work faster by disabling vsync
+#define ANISOTROPIC_FILTERING	// set all textures to max anisotropic filtering
 //#define USE_TEXTURE_POOL
 #ifdef LIBRW
 #define EXTENDED_COLOURFILTER		// more options for colour filter (replaces mblur)
@@ -389,14 +393,101 @@ static_assert(false, "SUPPORT_XBOX_SCRIPT and SUPPORT_MOBILE_SCRIPT are mutually
 
 #endif
 
-#ifdef LIBRW
-// these are not supported with librw yet
+// Streaming
+#if !defined(_WIN32) && !defined(__SWITCH__)
+	//#define ONE_THREAD_PER_CHANNEL // Don't use if you're not on SSD/Flash - also not utilized too much right now(see commented LoadAllRequestedModels in Streaming.cpp)
+	#define FLUSHABLE_STREAMING // Make it possible to interrupt reading when processing file isn't needed anymore.
 #endif
-// IMG
-#define BIG_IMG // allows to read larger img files
+#define BIG_IMG // Not complete - allows to read larger img files
 
 //#define SQUEEZE_PERFORMANCE
 #ifdef SQUEEZE_PERFORMANCE
 	#undef PS2_ALPHA_TEST
 	#undef NO_ISLAND_LOADING
+#endif
+
+// -------
+
+#if defined __MWERKS__ || defined VANILLA_DEFINES
+#define FINAL
+#undef CHATTYSPLASH
+#undef TIMEBARS
+
+#define MASTER
+#undef VALIDATE_SAVE_SIZE
+#undef NO_MOVIES
+#undef DEBUGMENU
+
+#undef DRAW_GAME_VERSION_TEXT
+
+//#undef NASTY_GAME
+//#undef NO_CDCHECK
+
+#undef GTA_PS2_STUFF
+#undef USE_PS2_RAND
+#undef RANDOMSPLASH
+#undef PS2_MATFX
+
+#undef FIX_BUGS
+#define THIS_IS_STUPID
+#undef MORE_LANGUAGES
+#undef COMPATIBLE_SAVES
+#undef LOAD_INI_SETTINGS
+#undef FIX_HIGH_FPS_BUGS_ON_FRONTEND
+
+#undef ASPECT_RATIO_SCALE
+#undef PROPER_SCALING
+//#undef DEFAULT_NATIVE_RESOLUTION
+#undef PS2_ALPHA_TEST
+#undef IMPROVED_VIDEOMODE
+#undef DISABLE_LOADING_SCREEN
+#undef DISABLE_VSYNC_ON_TEXTURE_CONVERSION
+
+#undef FIX_SPRITES
+
+#define PC_WATER
+#undef WATER_CHEATS
+
+#undef USE_CUTSCENE_SHADOW_FOR_PED
+#undef DISABLE_CUTSCENE_SHADOWS
+
+#undef XINPUT
+#undef DETECT_PAD_INPUT_SWITCH
+#undef KANGAROO_CHEAT
+#undef RESTORE_ALLCARSHELI_CHEAT
+#undef BETTER_ALLCARSAREDODO_CHEAT
+#undef WALLCLIMB_CHEAT
+#undef REGISTER_START_BUTTON
+#undef BIND_VEHICLE_FIREWEAPON
+#undef BUTTON_ICONS
+
+#undef FIX_RADAR
+
+#undef MAP_ENHANCEMENTS
+#undef MUCH_SHORTER_OUTRO_SCREEN
+#undef CUSTOM_FRONTEND_OPTIONS
+
+#undef GRAPHICS_MENU_OPTIONS
+#undef NO_ISLAND_LOADING
+#undef CUTSCENE_BORDERS_SWITCH
+#undef MULTISAMPLING
+#undef INVERT_LOOK_FOR_PAD
+
+#undef USE_DEBUG_SCRIPT_LOADER
+#undef USE_MEASUREMENTS_IN_METERS
+#undef USE_PRECISE_MEASUREMENT_CONVERTION
+#undef SUPPORT_JAPANESE_SCRIPT
+#undef MISSION_REPLAY
+#undef USE_ADVANCED_SCRIPT_DEBUG_OUTPUT
+#undef USE_BASIC_SCRIPT_DEBUG_OUTPUT
+
+#define DONT_FIX_REPLAY_BUGS
+
+#undef EXPLODING_AIRTRAIN
+#undef CPLANE_ROTORS
+#undef CAMERA_PICKUP
+#undef CANCELLABLE_CAR_ENTER
+#undef IMPROVED_CAMERA
+#undef FREE_CAM
+#undef BIG_IMG
 #endif

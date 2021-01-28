@@ -26,8 +26,6 @@
 #include "General.h"
 #include "VarConsole.h"
 
-// --MIAMI: file done
-
 #if defined(FIX_BUGS)
 	#define SCREEN_SCALE_X_FIX(a) SCREEN_SCALE_X(a)
 	#define SCREEN_SCALE_Y_FIX(a) SCREEN_SCALE_Y(a)
@@ -619,11 +617,11 @@ void CHud::Draw()
 		/*
 			DrawWantedLevel
 		*/
-		if (m_LastWanted == playerPed->m_pWanted->m_nWantedLevel) {
+		if (m_LastWanted == playerPed->m_pWanted->GetWantedLevel()) {
 			alpha = DrawFadeState(HUD_WANTED_FADING, 0);
 		} else {
 			alpha = DrawFadeState(HUD_WANTED_FADING, 1);
-			m_LastWanted = playerPed->m_pWanted->m_nWantedLevel;
+			m_LastWanted = playerPed->m_pWanted->GetWantedLevel();
 		}
 
 		if (m_WantedState != FADED_OUT) {
@@ -639,7 +637,7 @@ void CHud::Draw()
 
 			for (int i = 0; i < 6; i++) {
 				if (FrontEndMenuManager.m_PrefsShowHud) {
-					if (playerPed->m_pWanted->m_nWantedLevel > i
+					if (playerPed->m_pWanted->GetWantedLevel() > i
 						&& (CTimer::GetTimeInMilliseconds() > playerPed->m_pWanted->m_nLastWantedLevelChange
 							+ 2000 || CTimer::GetFrameCounter() & 4)) {
 
@@ -652,7 +650,7 @@ void CHud::Draw()
 						CFont::SetColor(WANTED_COLOR_FLASH);
 						CFont::PrintString(SCREEN_SCALE_FROM_RIGHT(110.0f + 23.0f * i), SCREEN_SCALE_Y(87.0f), sPrintIcon);
 
-					} else if (playerPed->m_pWanted->m_nWantedLevel <= i) {
+					} else if (playerPed->m_pWanted->GetWantedLevel() <= i) {
 						NOTWANTED_COLOR.a = alpha;
 						CFont::SetColor(NOTWANTED_COLOR);
 						CFont::PrintString(SCREEN_SCALE_FROM_RIGHT(110.0f + 23.0f * i), SCREEN_SCALE_Y(87.0f), sPrintIcon);
@@ -1140,20 +1138,20 @@ void CHud::Draw()
 			// Yeah, top and bottom changed place. R* vision
 			if (IntroRect.m_bIsUsed && IntroRect.m_bBeforeFade) {
 				if (IntroRect.m_nTextureId >= 0) {
-					CRect rect = {
+					CRect rect (
 						IntroRect.m_sRect.left,
 						IntroRect.m_sRect.top,
 						IntroRect.m_sRect.right,
-						IntroRect.m_sRect.bottom };
+						IntroRect.m_sRect.bottom );
 
 					CTheScripts::ScriptSprites[IntroRect.m_nTextureId].Draw(rect, IntroRect.m_sColor);
 				}
 				else {
-					CRect rect = {
+					CRect rect (
 						IntroRect.m_sRect.left,
 						IntroRect.m_sRect.top,
 						IntroRect.m_sRect.right,
-						IntroRect.m_sRect.bottom };
+						IntroRect.m_sRect.bottom );
 
 					CSprite2d::DrawRect(rect, IntroRect.m_sColor);
 				}
@@ -1174,7 +1172,12 @@ void CHud::Draw()
 			CFont::SetBackgroundColor(CRGBA(0, 0, 0, 128));
 			CFont::SetCentreOn();
 			CFont::SetPropOn();
-			CFont::SetDropShadowPosition(0);
+#ifdef CUTSCENE_BORDERS_SWITCH
+			if (!FrontEndMenuManager.m_PrefsCutsceneBorders)
+				CFont::SetDropShadowPosition(2);
+			else
+#endif
+				CFont::SetDropShadowPosition(0);
 			CFont::SetFontStyle(FONT_LOCALE(FONT_STANDARD));
 			CFont::SetColor(CRGBA(225, 225, 225, 255));
 
@@ -1184,10 +1187,6 @@ void CHud::Draw()
 				onceItWasWidescreen = true;
 				
 				if (FrontEndMenuManager.m_PrefsShowSubtitles || !CCutsceneMgr::IsRunning()) {
-#ifdef CUTSCENE_BORDERS_SWITCH
-					if (!FrontEndMenuManager.m_PrefsCutsceneBorders)
-						CFont::SetDropShadowPosition(2);
-#endif
 					CFont::SetCentreSize(SCREEN_WIDTH - SCREEN_SCALE_X(60.0f));
 					CFont::SetScale(SCREEN_SCALE_X(0.58f), SCREEN_SCALE_Y(1.2f));
 					CFont::PrintString(SCREEN_WIDTH / 2.f, SCREEN_SCALE_FROM_BOTTOM(80.0f), m_Message);
