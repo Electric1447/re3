@@ -451,9 +451,7 @@ CPostFX::Render(RwCamera *cam, uint32 red, uint32 green, uint32 blue, uint32 blu
 				glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, fxraster, 0);
 			}
 			using_fbo = true;
-			vglStopRendering();
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			vglStartRendering();
 		}
 #endif
 		switch(EffectSwitch){

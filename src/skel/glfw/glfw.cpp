@@ -13,15 +13,17 @@ DWORD _dwOperatingSystemVersion;
 #else
 long _dwOperatingSystemVersion;
 #ifndef __APPLE__
+#ifndef PSP2
 #include <sys/sysinfo.h>
+#endif
 #else
 #include <mach/mach_host.h>
 #include <sys/sysctl.h>
 #endif
-#include <errno.h>
+#include <stddef.h>
 #include <locale.h>
 #include <signal.h>
-#include <stddef.h>
+#include <errno.h>
 #endif
 
 #include "common.h"
@@ -85,25 +87,6 @@ static psGlobalType PsGlobal;
 
 size_t _dwMemAvailPhys;
 RwUInt32 gGameState;
-
-#ifdef _WIN32
-DWORD _dwOperatingSystemVersion;
-#include "resource.h"
-#else
-long _dwOperatingSystemVersion;
-#ifndef __APPLE__
-#ifndef PSP2
-#include <sys/sysinfo.h>
-#endif
-#else
-#include <mach/mach_host.h>
-#include <sys/sysctl.h>
-#endif
-#include <stddef.h>
-#include <locale.h>
-#include <signal.h>
-#include <errno.h>
-#endif
 
 #ifdef DONT_TRUST_RECOGNIZED_JOYSTICKS
 char gSelectedJoystickName[128] = "";

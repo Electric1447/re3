@@ -20,7 +20,7 @@ float4 main(
 ) {
 	half a = u_blurcolor.a;
 	half4 doublec = clamp(u_blurcolor*2.0, 0.0, 1.0);
-	half4 dst = v_color*tex2D(tex0, half2(v_tex0.x, v_tex0.y));
+	half4 dst = v_color*tex2D(tex0, half2(v_tex0.x, 1.0-v_tex0.y));
 	dst.rgb = lerp(u_fogColor.rgb, dst.rgb, v_fog);
 	DoAlphaTest(dst.a, u_alphaRef);
 	
