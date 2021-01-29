@@ -21,9 +21,9 @@ CFLAGS		+=	$(INCLUDE) -DPSP2 -DNDEBUG -DMASTER -DLIBRW -DRW_GL3 -DAUDIO_OAL -DLI
 CXXFLAGS	:=	$(CFLAGS) -fno-rtti -fno-exceptions
 ASFLAGS		:=	-g $(ARCH)
 LDFLAGS		=	-g $(ARCH) -Wl,-Map,$(notdir $*.map)
-LIBS		:=	-lrw -lopenal -lSDL2 -lvita2d -lvitagl -lSceAppMgr_stub -lSceDisplay_stub -lSceCommonDialog_stub -lSceLibKernel_stub \
+LIBS		:=	-lrw -lopenal -lvitagl -lSceAppMgr_stub -lSceDisplay_stub -lSceCommonDialog_stub -lSceLibKernel_stub \
 				-lSceSysmodule_stub -lvitashark -lSceShaccCg_stub -lvitagl -lmathneon -lSceGxm_stub -lScePower_stub \
-				-lSceCtrl_stub -lSceHid_stub -lSceAudio_stub -lSceTouch_stub -lm -lpthread -lmpg123
+				-lSceCtrl_stub -lSceHid_stub -lSceAudio_stub -lSceTouch_stub -lm -lpthread -lmpg123 -lSceAudioIn_stub
 
 all:	$(TARGET).vpk
 
