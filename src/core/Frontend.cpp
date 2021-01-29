@@ -5586,7 +5586,7 @@ CMenuManager::DrawQuitGameScreen(void)
 	}
 #else
 	static PauseModeTime firstTick = CTimer::GetTimeInMillisecondsPauseMode();
-	if (alpha == 255 && CTimer::GetTimeInMillisecondsPauseMode() - firstTick > 1000) {
+	if (alpha == 255 && CTimer::GetTimeInMillisecondsPauseMode() - firstTick > 750) {
 		exitSignalTimer = 150;
 	}
 #endif
