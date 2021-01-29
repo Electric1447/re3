@@ -84,9 +84,9 @@ CdStreamInitThread(void)
 	gChannelRequestQ.tail = 0;
 	gChannelRequestQ.size = gNumChannels + 1;
 	ASSERT(gChannelRequestQ.items != nil );
-#ifndef PSP2
-	gCdStreamSema = sem_open("/semaphore_cd_stream", O_CREAT, 0644, 1);
 
+#ifndef PSP2
+	gCdStreamSema = sem_open("/semaphore_cd_stream", O_CREAT, 0644, 0);
 
 	if (gCdStreamSema == SEM_FAILED) {
 #else
@@ -106,7 +106,7 @@ CdStreamInitThread(void)
 		{
 #ifndef PSP2
 			sprintf(semName,"/semaphore_done%d",i);
-			gpReadInfo[i].pDoneSemaphore = sem_open(semName, O_CREAT, 0644, 1);
+			gpReadInfo[i].pDoneSemaphore = sem_open(semName, O_CREAT, 0644, 0);
 
 			if (gpReadInfo[i].pDoneSemaphore == SEM_FAILED)
 #else
@@ -124,7 +124,7 @@ CdStreamInitThread(void)
 #ifdef ONE_THREAD_PER_CHANNEL
 #ifndef PSP2
 			sprintf(semName,"/semaphore_start%d",i);
-			gpReadInfo[i].pStartSemaphore = sem_open(semName, O_CREAT, 0644, 1);
+			gpReadInfo[i].pStartSemaphore = sem_open(semName, O_CREAT, 0644, 0);
 
 			if (gpReadInfo[i].pStartSemaphore == SEM_FAILED)
 #else
@@ -205,6 +205,7 @@ CdStreamInit(int32 numChannels)
 	gNumImages = 0;
 
 	gNumChannels = numChannels;
+	ASSERT( gNumChannels != 0 );
 
 	gpReadInfo = (CdReadInfo *)calloc(numChannels, sizeof(CdReadInfo));
 	ASSERT( gpReadInfo != nil );
@@ -432,7 +433,12 @@ void *CdStreamThread(void *param)
 #ifndef ONE_THREAD_PER_CHANNEL
 	while (gCdStreamThreadStatus != 2) {
 		sem_wait(gCdStreamSema);
+
 		int32 channel = GetFirstInQueue(&gChannelRequestQ);
+		
+		// spurious wakeup
+		if (channel == -1)
+			continue;
 #else
 	int channel = *((int*)param);
 	while (gpReadInfo[channel].nThreadStatus != 2){
