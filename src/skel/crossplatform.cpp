@@ -19,7 +19,7 @@
 
 void *memcpy(void *dest, const void *src, size_t n)
 {
-	return memcpy_neon(dest, src, n);
+	return sceClibMemcpy(dest, src, n);
 }
 
 static unsigned char gButtons[GLFW_GAMEPAD_BUTTON_LAST+1];
