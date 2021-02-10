@@ -147,9 +147,9 @@ CPostFX::Open(RwCamera *cam)
 
 
 #ifdef RW_D3D9
-#include "shaders/colourfilterVC_PS.inc"
+#include "shaders/obj/colourfilterVC_PS.inc"
 	colourfilterVC_PS = rw::d3d::createPixelShader(colourfilterVC_PS_cso);
-#include "shaders/contrastPS.inc"
+#include "shaders/obj/contrastPS.inc"
 	contrast_PS = rw::d3d::createPixelShader(contrastPS_cso);
 #endif
 #ifdef RW_OPENGL
@@ -164,8 +164,8 @@ CPostFX::Open(RwCamera *cam)
 	const char *fs[] = { (const char*)colourfilterVC_f, (const char*)&size_colourfilterVC_f, nil };
 	colourFilterVC = Shader::create(vs, fs, true);
 #else
-#include "shaders/im2d_gl.inc"
-#include "shaders/colourfilterVC_fs_gl.inc"
+#include "shaders/obj/im2d_vert.inc"
+#include "shaders/obj/colourfilterVC_frag.inc"
 	const char *vs[] = { shaderDecl, header_vert_src, im2d_vert_src, nil };
 	const char *fs[] = { shaderDecl, header_frag_src, colourfilterVC_frag_src, nil };
 	colourFilterVC = Shader::create(vs, fs);

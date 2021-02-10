@@ -251,6 +251,12 @@ enum Config {
 #define FIX_BUGS_64 // Must have fixes to be able to run 64 bit build
 #endif
 
+#define ASCII_STRCMP // use faster ascii str comparisons
+
+#if !defined _WIN32 || defined __MWERKS__ || defined __MINGW32__ || defined VANILLA_DEFINES
+#undef ASCII_STRCMP
+#endif
+
 // Just debug menu entries
 #ifdef DEBUGMENU
 #define RELOADABLES			// some debug menu options to reload TXD files
@@ -292,8 +298,8 @@ enum Config {
 #if !defined(RW_GL3) && defined(_WIN32)
 #define XINPUT
 #endif
-#if !defined(_WIN32) && !defined(__SWITCH__)
-#define DONT_TRUST_RECOGNIZED_JOYSTICKS // Then we'll only rely on GLFW gamepad DB, and expect user to enter Controller->Detect joysticks if his joystick isn't on that list.
+#if defined XINPUT || (defined RW_GL3 && !defined LIBRW_SDL2 && !defined __SWITCH__)
+#define DETECT_JOYSTICK_MENU // Then we'll expect user to enter Controller->Detect joysticks if his joystick isn't detected at the start.
 #endif
 #define DETECT_PAD_INPUT_SWITCH // Adds automatic switch of pad related stuff between controller and kb/m
 #define KANGAROO_CHEAT

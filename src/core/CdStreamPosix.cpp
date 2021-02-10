@@ -84,7 +84,6 @@ CdStreamInitThread(void)
 	gChannelRequestQ.tail = 0;
 	gChannelRequestQ.size = gNumChannels + 1;
 	ASSERT(gChannelRequestQ.items != nil );
-
 #ifndef PSP2
 	gCdStreamSema = sem_open("/semaphore_cd_stream", O_CREAT, 0644, 0);
 
