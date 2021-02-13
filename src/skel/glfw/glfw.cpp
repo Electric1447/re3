@@ -58,7 +58,10 @@ long _dwOperatingSystemVersion;
 int _newlib_heap_size_user = 256 * 1024 * 1024;
 #endif
 
-// --MIAMI: file done
+#ifdef _WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#endif
 
 rw::EngineOpenParams openParams;
 
@@ -215,6 +218,7 @@ psGrabScreen(RwCamera *pCamera)
 	}
 #else
 	rw::Image *image = RwCameraGetRaster(pCamera)->toImage();
+	image->removeMask();
 	if(image)
 		return image;
 #endif
@@ -1617,6 +1621,15 @@ main(int argc, char *argv[])
 
 		return 0;
 	}
+
+#ifdef _WIN32
+	HWND wnd = glfwGetWin32Window(PSGLOBAL(window));
+
+	HICON icon = LoadIcon(instance, MAKEINTRESOURCE(IDI_MAIN_ICON));
+
+	SendMessage(wnd, WM_SETICON, ICON_BIG, (LPARAM)icon);
+	SendMessage(wnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
+#endif
 
 	psPostRWinit();
 

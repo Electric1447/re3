@@ -194,6 +194,10 @@ enum Config {
 
 // those infamous texts
 #define DRAW_GAME_VERSION_TEXT
+#ifdef DRAW_GAME_VERSION_TEXT
+	// unlike R* development builds, ours has runtime switch on debug menu & .ini, and disabled as default.
+	#define USE_OUR_VERSIONING // If you disable this then game will fetch version from peds.col, as R* did while in development
+#endif
 
 // Memory allocation and compression
 // #define USE_CUSTOM_ALLOCATOR		// use CMemoryHeap for allocation. use with care, not finished yet
@@ -307,7 +311,7 @@ enum Config {
 #define BETTER_ALLCARSAREDODO_CHEAT
 #define WALLCLIMB_CHEAT
 #define REGISTER_START_BUTTON
-//#define BIND_VEHICLE_FIREWEAPON // Adds ability to rebind fire key for 'in vehicle' controls
+#define BIND_VEHICLE_FIREWEAPON // Adds ability to rebind fire key for 'in vehicle' controls
 #define BUTTON_ICONS // use textures to show controller buttons
 
 // Hud, frontend and radar
@@ -320,6 +324,9 @@ enum Config {
 //#	define PS2_MENU_USEALLPAGEICONS
 #else
 #	define MAP_ENHANCEMENTS			// Adding waypoint and better mouse support
+#	ifdef XINPUT
+#		define GAMEPAD_MENU		// Add gamepad menu
+#	endif
 #	define TRIANGLE_BACK_BUTTON
 //#	define CIRCLE_BACK_BUTTON
 #define LEGACY_MENU_OPTIONS			// i.e. frame sync(vsync)
@@ -476,6 +483,7 @@ static_assert(false, "SUPPORT_XBOX_SCRIPT and SUPPORT_MOBILE_SCRIPT are mutually
 #undef RADIO_OFF_TEXT
 
 #undef MAP_ENHANCEMENTS
+#undef GAMEPAD_MENU
 #undef MUCH_SHORTER_OUTRO_SCREEN
 #undef CUSTOM_FRONTEND_OPTIONS
 
