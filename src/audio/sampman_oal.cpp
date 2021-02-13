@@ -573,12 +573,12 @@ _FindMP3s(void)
 	char filepath[MAX_PATH*2];
 	int total_ms;
 	WIN32_FIND_DATA fd;
-	
+#ifndef PSP2
 	if (getcwd(_mp3DirectoryPath, MAX_PATH) == NULL) {
 		perror("getcwd: ");
 		return;
 	}
-	
+#endif
 	OutputDebugString("Finding MP3s...");
 	strcpy(path, _mp3DirectoryPath);
 	strcat(path, "\\MP3\\");
@@ -605,13 +605,14 @@ _FindMP3s(void)
 		FindClose(hFind);
 		return;
 	}
-
+#ifndef PSP2
 	if ( _ResolveLink(filepath, filepath) )
 	{
 		OutputDebugString("Resolving Link");
 		OutputDebugString(filepath);
 		bShortcut = true;
 	} else
+#endif
 		bShortcut = false;
 	
 	aStream[0] = new CStream(filepath, ALStreamSources[0], ALStreamBuffers[0]);
@@ -677,12 +678,15 @@ _FindMP3s(void)
 
 			if ( filepathlen > 0 )
 			{
+#ifndef PSP2
 				if ( _ResolveLink(filepath, filepath) )
 				{
 					OutputDebugString("Resolving Link");
 					OutputDebugString(filepath);
 					bShortcut = true;
-				} else {
+				} else
+#endif
+				{
 					bShortcut = false;
 					if (filepathlen > MAX_PATH) {
 						continue;
@@ -740,12 +744,14 @@ _FindMP3s(void)
 			
 			if ( filepathlen > 0 )
 			{
+#ifndef PSP2
 				if ( _ResolveLink(filepath, filepath) )
 				{
 					OutputDebugString("Resolving Link");
 					OutputDebugString(filepath);
 					bShortcut = true;
 				} else
+#endif
 					bShortcut = false;
 				
 				aStream[0] = new CStream(filepath, ALStreamSources[0], ALStreamBuffers[0]);
